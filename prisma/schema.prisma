@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+// model Employee {
+//   id        String   @id @default(cuid())
+//   name       String
+//   email      String ?     
+//   phone      String?
+//   image      String?
+//   department String?
+//   createdAt  DateTime    @default(now())
+//   employeeId String      @unique
+//   position   String
+//   project    String?
+// }
+
+// model Request{
+
+//   id        String   @id @default(cuid())
+//   employeeId String
+//   status    String   @default("pending")
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   requestType String
+//   firstApprovment String?
+//   secondApprovment String?
+//   shiftType String?
+//   shiftDate1 DateTime?
+//   shiftDate2 DateTime?
+//   requesterComment String?
+//   replier1_Comment String?
+//   replier2_Comment String?
+//   approvalDate1 DateTime?
+//   approvalDate2 DateTime?
+
+// }
+
+model Employee {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  image     String?
+  department String?
+  createdAt DateTime @default(now())
+  employeeId String  @unique
+  position  String
+  project   String?
+
+  // 1-to-many: Creator of requests
+  requestsCreated Request[] @relation("RequestCreator")
+
+  // many-to-many: Received requests (implicit relation)
+  receivedRequests Request[] @relation("RequestReceivers")
+
+  RequestReceivers RequestReceivers[]
+}
+
+model Request {
+  id        String   @id @default(cuid())
+  employeeId String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  requestType String
+  firstApprovment String?
+  secondApprovment String?
+  shiftType1 String?
+  shiftType2  String?
+  shiftDate1 DateTime?
+  shiftDate2 DateTime?
+  requesterComment String?
+  replier1_Comment String?
+  replier2_Comment String?
+  approvalDate1 DateTime?
+  approvalDate2 DateTime?
+  
+
+  // 1-to-many: Back relation to creator
+  creator Employee @relation("RequestCreator", fields: [employeeId], references: [employeeId])
+
+  // many-to-many: Receivers (implicit)
+  receivers Employee[] @relation("RequestReceivers")
+
+  RequestReceivers RequestReceivers[]
+}
+
+model RequestReceivers {
+  requestId String
+  employeeId String
+  recieverId String
+
+  request Request @relation(fields: [requestId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [employeeId])
+
+  @@id([requestId, employeeId])
+}
