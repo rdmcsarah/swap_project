@@ -7,8 +7,8 @@ import { Calendar, CalendarDayButton } from "@/components/ui/calendar"
 
 export default function Calendar21() {
   const [range, setRange] = React.useState<DateRange | undefined>({
-    from: new Date(2025, 5, 12),
-    to: new Date(2025, 5, 17),
+    from: new Date(),
+    to: new Date(),
   })
 
   return (
@@ -32,7 +32,7 @@ export default function Calendar21() {
           return (
             <CalendarDayButton day={day} modifiers={modifiers} {...props}>
               {children}
-              {!modifiers.outside && <span>{isWeekend ? "$220" : "$100"}</span>}
+              {/* {!modifiers.outside && <span>{isWeekend ? "$220" : "$100"}</span>} */}
             </CalendarDayButton>
           )
         },
