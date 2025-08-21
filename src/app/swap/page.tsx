@@ -91,12 +91,22 @@ function isAfterNoon(): boolean {
     return [...employees].sort((a, b) => a.name.localeCompare(b.name));
   }, [employees]);
 
-  const filteredEmployees = useMemo(() => {
-    if (!searchTerm.trim()) return sortedEmployees;
-    return sortedEmployees.filter((emp) =>
-      emp.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, sortedEmployees]);
+  // const filteredEmployees = useMemo(() => {
+  //   if (!searchTerm.trim()) return sortedEmployees;
+  //   return sortedEmployees.filter((emp) =>
+  //     emp.name.toLowerCase().includes(searchTerm.toLowerCase())
+  //   );
+  // }, [searchTerm, sortedEmployees]);
+const filteredEmployees = useMemo(() => {
+  if (!searchTerm.trim()) return sortedEmployees;
+
+  const term = searchTerm.toLowerCase().trim();
+
+  return sortedEmployees.filter((emp) =>
+    `${emp.employeeId}-${emp.name}`.toLowerCase().includes(term)
+  );
+}, [searchTerm, sortedEmployees]);
+
 
   const handleSelect = (emp: any) => {
     setFormData({ ...formData, receiverId: emp.employeeId });
@@ -298,8 +308,10 @@ return (
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
             >
               <option value="">اختر نوع الوردية</option>
-              <option value="morning">صباحية (8ص - 4م)</option>
-              <option value="evening">مسائية (4م - 12ص)</option>
+              <option value="morning">صباحية </option>
+              <option value="evening">مسائية </option>
+              <option value="afternoon">ليليه </option>
+
             </select>
           </div>
 
@@ -495,7 +507,7 @@ return (
                 onClick={() => handleSelect(emp)}
                 className="px-4 py-2 hover:bg-green-100 cursor-pointer"
               >
-                {emp?.name}
+                {emp?.employeeId}-{emp?.name}
               </li>
             ))
           ) : (
@@ -520,8 +532,9 @@ return (
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
             >
               <option value="">اختر نوع الوردية</option>
-              <option value="morning">صباحية (8ص - 4م)</option>
-              <option value="evening">مسائية (4م - 12ص)</option>
+              <option value="morning">صباحية</option>
+              <option value="evening">مسائية </option>
+                  <option value="afternoon">ليليه </option>
             </select>
           </div>
         </div>
