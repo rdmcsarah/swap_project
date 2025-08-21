@@ -276,7 +276,7 @@ return (
       <input type="hidden" name="requestType" value="shift-exchange" />
 
       {/* وردية الموظف الحالي */}
-      <section className="bg-gray-50 p-6 rounded-lg border border-gray-200" onClick={() => resetCalendar(true)}>
+      <section className="bg-gray-50 p-6 rounded-lg border border-gray-200" >
         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
           <svg className="w-5 h-5 ml-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
@@ -337,7 +337,7 @@ return (
 
       {/* Toggle Button */}
       <button 
-        type="button"
+        type="button" 
         onClick={() => setShowCalendar(!showCalendar)}
         className="mb-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
       >
@@ -369,7 +369,7 @@ return (
 
       {/* Calendar component toggled */}
       {showCalendar && (
-        <div ref={calendarRef} className="relative z-50" onClick={() => resetCalendar(true)}>
+        <div ref={calendarRef} className="relative z-50"  >
 {/* <Calendar21
   value={
     formData.shiftDate1 && formData.shiftDate2
@@ -404,7 +404,7 @@ return (
     });
   }}
 /> */}
-<Calendar21
+<Calendar21 
   value={
     formData.shiftDate1 && formData.shiftDate2
       ? {
