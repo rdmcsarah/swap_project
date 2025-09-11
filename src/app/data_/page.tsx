@@ -51,7 +51,7 @@ type Data = {
 
 export default function Page() {
 
-const [request, setRequest] = React.useState<Request>()
+const [requests, setRequests] = React.useState<Request[]>([]);
 const [employee, setEmployee] = React. useState<Employee>()  
 const [dataa, setData] =  React.useState<Data>({
     requests: [],
@@ -100,13 +100,14 @@ const [dataa, setData] =  React.useState<Data>({
       try {
 
             console.log("heree")
+            
 
         // const res = await fetch(`/api/requests?employeeId=${employeeId}`);
         const res = await fetch(`/api/requests?firstApprovment=APPROVED`);
 
         if (!res.ok) throw new Error(`Requests fetch failed: ${res.status}`);
         const data = await res.json();
-        setRequest(data);
+        setRequests(data);
 
         console.log("daa: ",data)
       } catch (err) {
@@ -124,7 +125,7 @@ const [dataa, setData] =  React.useState<Data>({
 
         if (!res.ok) throw new Error(`Requests fetch failed: ${res.status}`);
         const data = await res.json();
-        setRequest(data);
+        setRequests(data);
       } catch (err) {
         console.error("Error fetching requests:", err);
       }
@@ -138,25 +139,21 @@ const [dataa, setData] =  React.useState<Data>({
 
 
 
-    useEffect(() => {
-        if (request && employee) {
-            console.log('Request:', request);
-            console.log('Employee:', employee);
-            setData({
-                requests: [request],
-                employees: [employee]
-            });
-        }   
-
-
-    }, [request, employee]);
+ useEffect(() => {
+  if (requests.length > 0 && employee) {
+    setData({
+      requests,       // already array
+      employees: [employee]
+    });
+  }
+}, [requests, employee]);
 
 
     if (dataa.requests.length === 0 || dataa.employees.length === 0) {
         return <div className="flex h-full items-center justify-center">Loading...</div>
     }
 
-console.log("dataa in pagexx",dataa.requests[0]);
+console.log("dataa in pagexx",dataa.requests);
 
   return (
     <SidebarProvider
@@ -178,7 +175,9 @@ console.log("dataa in pagexx",dataa.requests[0]);
               <div className="px-4 lg:px-6">
                 {/* <ChartAreaInteractive /> */}
               </div>
-              <DataTable data={dataa.requests[0]} />
+              {/* <DataTable data={dataa.requests[0]} /> */}
+              <DataTable data={dataa.requests} />
+
             </div>
           </div>
         </div>
