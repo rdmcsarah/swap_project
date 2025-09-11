@@ -175,8 +175,12 @@ console.log("dataa in pagexx",dataa.requests);
               <div className="px-4 lg:px-6">
                 {/* <ChartAreaInteractive /> */}
               </div>
-              {/* <DataTable data={dataa.requests[0]} /> */}
-              <DataTable data={dataa.requests} />
+              {/* <DataTable data={dataa.requests} /> */}
+<DataTable
+  data={[...dataa.requests].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )}
+/>
 
             </div>
           </div>

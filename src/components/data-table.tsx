@@ -169,6 +169,7 @@ const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
   const searchTerm = filterValue.toLowerCase();
   const originalData = row.original;
   
+  console.log("llll: ",originalData.requestType)
   // Search across multiple relevant fields
   return (
     String(originalData.id || '').toLowerCase().includes(searchTerm) ||
@@ -181,7 +182,7 @@ const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
 
 export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
   {
-    accessorKey: "view",
+    accessorKey: "عرض",
     header: () => <div className="text-center font-semibold">عرض</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
@@ -191,28 +192,39 @@ export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
       </div>
     ),
   },
-  {
-    
-    accessorKey: "reviewerdf",
-    header: () => <div className="text-center font-semibold">ثانية موافقة</div>,
-    cell: ({ row }) => (
-      <div className="flex justify-center">
-        <Badge
-          variant="outline"
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
-        >
-          {row.original.secondApprovment === "APPROVED" ? (
-            <IconCircleCheckFilled className="w-4 h-4 fill-green-500 dark:fill-green-400" />
-          ) : (
-            <IconLoader className="w-4 h-4 animate-spin" />
-          )}
-          {row.original.secondApprovment===null?"قيد الانتظار":statusMap[row.original.secondApprovment] || row.original.secondApprovment}
-        </Badge>
-      </div>
-    ),
+{
+  accessorKey: "موافقة_الثانيه",
+  header: () => <div className="text-center font-semibold">ثانية موافقة</div>,
+  cell: ({ row }) => (
+    <div className="flex justify-center">
+      <Badge
+        variant="outline"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
+      >
+        {row.original.secondApprovment === "APPROVED" ? (
+          <IconCircleCheckFilled className="w-4 h-4 fill-green-500 dark:fill-green-400" />
+        ) : (
+          <IconLoader className="w-4 h-4 " />
+        )}
+
+        {row.original.secondApprovment === null
+          ? "قيد الانتظار"
+          : statusMap[row.original.secondApprovment] || row.original.secondApprovment}
+      </Badge>
+    </div>
+  ),
+
+  // ✅ Now null counts as "PENDING"
+  filterFn: (row, columnId, filterValue) => {
+    if (!filterValue) return true;
+
+    const value = row.original.secondApprovment ?? "PENDING"; 
+    return value === filterValue;
   },
+},
+
   {
-    accessorKey: "target",
+    accessorKey: "موافقة_اولي",
     header: () => <div className="text-center font-semibold">موافقة أولى</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
@@ -233,20 +245,27 @@ export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
         </Badge>
       </div>
     ),
+
+      filterFn: (row, columnId, filterValue) => {
+    if (!filterValue) return true;
+
+    const value = row.original.secondApprovment ?? "PENDING"; 
+    return value === filterValue;
+  },
   },
   {
-    accessorKey: "status",
-    header: () => <div className="text-center font-semibold">نوع الطلب</div>,
+    accessorKey: "تاريخ",
+    header: () => <div className="text-center font-semibold"> تاريخ </div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
         <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
-          {requestTypeMap[row.original.requestType] || row.original.requestType}
+          {requestTypeMap[row.original.createdAt] || row.original.createdAt}
         </Badge>
       </div>
     ),
   },
   {
-    accessorKey: "type",
+    accessorKey: "مقدم_الطلب",
     header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
@@ -257,7 +276,7 @@ export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
     ),
   },
   {
-    accessorKey: "header",
+    accessorKey: "الطلب_رقم",
     header: () => <div className="text-center font-semibold">رقم الطلب</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
@@ -267,11 +286,7 @@ export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
       </div>
     ),
 
-  //   filterFn: (row, columnId, filterValue) => {
-  //   const rawValue = row.getValue(columnId) as string; // ✅ Cast
-  //   const rowValue = requestTypeMap[rawValue] || rawValue;
-  //   return filterRequests(rowValue, String(filterValue));
-  // },
+
     enableHiding: false,
   },
 
@@ -368,54 +383,72 @@ const [globalFilter, setGlobalFilter] = React.useState("");
   return (
  <Tabs defaultValue="outline" className="w-full flex-col gap-6">
   {/* Top Toolbar */}
-  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-4 lg:px-6 py-3 bg-white border-b border-gray-200 rounded-t-lg">
-    {/* Search Input */}
+ <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-4 py-3 bg-white border-b border-gray-200 rounded-t-lg">
+  {/* Left Section: Filters */}
+  <div className="flex flex-wrap items-center gap-2">
+    {/* Column Toggle */}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1">
+          <IconLayoutColumns className="w-4 h-4" />
+          أعمدة
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-48">
+        {table.getAllColumns()
+          .filter((col) => col.getCanHide())
+          .map((col) => (
+            <DropdownMenuCheckboxItem
+              key={col.id}
+              checked={col.getIsVisible()}
+              onCheckedChange={(val) => col.toggleVisibility(!!val)}
+            >
+              {col.id}
+            </DropdownMenuCheckboxItem>
+          ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
 
+    {/* Approval Filters */}
+    <Select
+      value={(table.getColumn("موافقة_اولي")?.getFilterValue() as string) ?? ""}
+      onValueChange={(val) => table.getColumn("موافقة_اولي")?.setFilterValue(val || undefined)}
+    >
+      <SelectTrigger className="w-32 text-sm">
+        <SelectValue placeholder="موافقة أولى" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="APPROVED">مقبول</SelectItem>
+        <SelectItem value="PENDING">معلق</SelectItem>
+        <SelectItem value="REJECTED">مرفوض</SelectItem>
+      </SelectContent>
+    </Select>
 
-    {/* Actions */}
-    <div className="flex flex-wrap gap-2">
-      {/* Column Toggle Dropdown */}
-      {/* <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1">
-            <IconLayoutColumns className="w-4 h-4" />
-            <span className="hidden sm:inline">إدارة الأعمدة</span>
-            <IconChevronDown className="w-4 h-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          {table
-            .getAllColumns()
-            .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide())
-            .map((column) => (
-              <DropdownMenuCheckboxItem
-                key={column.id}
-                className="capitalize"
-                checked={column.getIsVisible()}
-                onCheckedChange={(value) => column.toggleVisibility(!!value)}
-              >
-                {column.id}
-              </DropdownMenuCheckboxItem>
-            ))}
-        </DropdownMenuContent>
-      </DropdownMenu> */}
-
-      {/* Custom Menu */}
-      <DropdownMenuRadioGroupDemo />
-    </div>
-
-    <div className="flex items-center gap-2 w-full sm:w-auto "  dir="rtl">
-      <input
-        type="text"
-        placeholder="بحث..."
-        value={table.getState().globalFilter ?? ""}
-        onChange={(e) => table.setGlobalFilter(e.target.value)}
-        className="w-full sm:w-72 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-      />
-    </div>
-
-
+    <Select
+      value={(table.getColumn("موافقة_الثانيه")?.getFilterValue() as string) ?? ""}
+      onValueChange={(val) => table.getColumn("موافقة_الثانيه")?.setFilterValue(val || undefined)}
+    >
+      <SelectTrigger className="w-32 text-sm">
+        <SelectValue placeholder="ثانية موافقة" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="APPROVED">مقبول</SelectItem>
+        <SelectItem value="PENDING">معلق</SelectItem>
+        <SelectItem value="REJECTED">مرفوض</SelectItem>
+      </SelectContent>
+    </Select>
   </div>
+
+  {/* Right Section: Search */}
+  <Input
+    type="text"
+    placeholder="بحث عن طلب..."
+    value={table.getState().globalFilter ?? ""}
+    onChange={(e) => table.setGlobalFilter(e.target.value)}
+    className="w-full md:w-72"
+  />
+</div>
+
 
   {/* Table Section */}
   <TabsContent value="outline" className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
