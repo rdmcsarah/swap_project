@@ -148,9 +148,10 @@ const [dataa, setData] =  React.useState<Data>({
   }
 }, [requests, employee]);
 
-
     if (dataa.requests.length === 0 || dataa.employees.length === 0) {
-        return <div className="flex h-full items-center justify-center">Loading...</div>
+        return  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500 text-lg">جاري التحميل...</div>
+      </div>
     }
 
 console.log("dataa in pagexx",dataa.requests);

@@ -195,75 +195,107 @@ export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
 {
   accessorKey: "موافقة_الثانيه",
   header: () => <div className="text-center font-semibold">ثانية موافقة</div>,
-  cell: ({ row }) => (
-    <div className="flex justify-center">
-      <Badge
-        variant="outline"
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
-      >
-        {row.original.secondApprovment === "APPROVED" ? (
-          <IconCircleCheckFilled className="w-4 h-4 fill-green-500 dark:fill-green-400" />
-        ) : (
-          <IconLoader className="w-4 h-4 " />
-        )}
+  cell: ({ row }) => {
+    const status = row.original.secondApprovment ?? "PENDING";
+    const statusLabel =
+      status === "PENDING"
+        ? "قيد الانتظار"
+        : statusMap[status] || status;
 
-        {row.original.secondApprovment === null
-          ? "قيد الانتظار"
-          : statusMap[row.original.secondApprovment] || row.original.secondApprovment}
-      </Badge>
-    </div>
-  ),
+    let badgeColor = "bg-yellow-100 text-yellow-700 border-yellow-300"; // default pending
+    if (status === "APPROVED") {
+      badgeColor = "bg-green-100 text-green-700 border-green-300";
+    } else if (status === "REJECTED") {
+      badgeColor = "bg-red-100 text-red-700 border-red-300";
+    }
 
-  // ✅ Now null counts as "PENDING"
+    return (
+      <div className="flex justify-center">
+        <Badge
+          variant="outline"
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${badgeColor}`}
+        >
+          {/* {status === "APPROVED" ? (
+            <IconCircleCheckFilled className="w-4 h-4" />
+          ) : (
+            <IconLoader className="w-4 h-4" />
+          )} */}
+          {statusLabel}
+        </Badge>
+      </div>
+    );
+  },
   filterFn: (row, columnId, filterValue) => {
     if (!filterValue) return true;
+    const value = row.original.secondApprovment ?? "PENDING";
+    return value === filterValue;
+  },
+},
+{
+  accessorKey: "موافقة_اولي",
+  header: () => <div className="text-center font-semibold">موافقة أولى</div>,
+  cell: ({ row }) => {
+    const status = row.original.firstApprovment ?? "PENDING";
+    const statusLabel =
+      status === "PENDING"
+        ? "قيد الانتظار"
+        : statusMap[status] || status;
 
-    const value = row.original.secondApprovment ?? "PENDING"; 
+    let badgeColor = "bg-yellow-100 text-yellow-700 border-yellow-300"; // default pending
+    if (status === "APPROVED") {
+      badgeColor = "bg-green-100 text-green-700 border-green-300";
+    } else if (status === "REJECTED") {
+      badgeColor = "bg-red-100 text-red-700 border-red-300";
+    }
+
+    return (
+      <div className="flex justify-center">
+        <Badge
+          variant="outline"
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${badgeColor}`}
+        >
+          {/* {status === "APPROVED" ? (
+            <IconCircleCheckFilled className="w-4 h-4" />
+          ) : (
+            // <IconLoader className="w-4 h-4" />
+          )} */}
+          {statusLabel}
+        </Badge>
+      </div>
+    );
+  },
+  filterFn: (row, columnId, filterValue) => {
+    if (!filterValue) return true;
+    const value = row.original.firstApprovment ?? "PENDING";
     return value === filterValue;
   },
 },
 
-  {
-    accessorKey: "موافقة_اولي",
-    header: () => <div className="text-center font-semibold">موافقة أولى</div>,
-    cell: ({ row }) => (
+{
+  accessorKey: "تاريخ",
+  header: () => <div className="text-center font-semibold">تاريخ</div>,
+  cell: ({ row }) => {
+    const date = new Date(row.original.createdAt);
+    // 🟢 Format the date in Arabic (long format, e.g. 11 سبتمبر 2025)
+    const formattedDate = new Intl.DateTimeFormat("ar-EG", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(date);
+
+    return (
       <div className="flex justify-center">
         <Badge
           variant="outline"
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
+          className="px-3 py-1.5 rounded-lg text-sm"
         >
-          {row.original.firstApprovment === "APPROVED" ? (
-            <IconCircleCheckFilled className="w-4 h-4 fill-green-500 dark:fill-green-400" />
-          ) : (
-            <IconLoader className="w-4 h-4 animate-spin" />
-          )}
-
-          {row.original.firstApprovment===null?"قيد الانتظار":statusMap[row.original.firstApprovment] || row.original.firstApprovment}
-
-          {/* {row.original.firstApprovment || "not found"} */}
-          {/* {statusMap[row.original.firstApprovment] || row.original.firstApprovment} */}
+          {formattedDate}
         </Badge>
       </div>
-    ),
-
-      filterFn: (row, columnId, filterValue) => {
-    if (!filterValue) return true;
-
-    const value = row.original.secondApprovment ?? "PENDING"; 
-    return value === filterValue;
+    );
   },
-  },
-  {
-    accessorKey: "تاريخ",
-    header: () => <div className="text-center font-semibold"> تاريخ </div>,
-    cell: ({ row }) => (
-      <div className="flex justify-center">
-        <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
-          {requestTypeMap[row.original.createdAt] || row.original.createdAt}
-        </Badge>
-      </div>
-    ),
-  },
+}
+,
   {
     accessorKey: "مقدم_الطلب",
     header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
@@ -274,6 +306,9 @@ export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
         </Badge>
       </div>
     ),
+
+        enableHiding: true,
+
   },
   {
     accessorKey: "الطلب_رقم",
@@ -287,7 +322,7 @@ export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
     ),
 
 
-    enableHiding: false,
+    enableHiding: true,
   },
 
 ];
@@ -383,15 +418,25 @@ const [globalFilter, setGlobalFilter] = React.useState("");
   return (
  <Tabs defaultValue="outline" className="w-full flex-col gap-6">
   {/* Top Toolbar */}
- <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-4 py-3 bg-white border-b border-gray-200 rounded-t-lg">
-  {/* Left Section: Filters */}
-  <div className="flex flex-wrap items-center gap-2">
+<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-4 py-3 bg-white border-b border-gray-200 rounded-t-lg">
+  {/* Left Section: Main Action */}
+  <div className="flex items-center">
+    <Button
+      onClick={() => router.push("/swap")}
+      className="bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg px-4 py-2"
+    >
+      + تقديم طلب
+    </Button>
+  </div>
+
+  {/* Middle Section: Filters */}
+  <div className="flex flex-wrap items-center gap-3">
     {/* Column Toggle */}
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1">
+        <Button variant="outline" size="sm" className="gap-2 rounded-lg">
           <IconLayoutColumns className="w-4 h-4" />
-          أعمدة
+          <span className="hidden sm:inline">إدارة الأعمدة</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">
@@ -402,6 +447,7 @@ const [globalFilter, setGlobalFilter] = React.useState("");
               key={col.id}
               checked={col.getIsVisible()}
               onCheckedChange={(val) => col.toggleVisibility(!!val)}
+              className="text-sm"
             >
               {col.id}
             </DropdownMenuCheckboxItem>
@@ -410,43 +456,54 @@ const [globalFilter, setGlobalFilter] = React.useState("");
     </DropdownMenu>
 
     {/* Approval Filters */}
-    <Select
-      value={(table.getColumn("موافقة_اولي")?.getFilterValue() as string) ?? ""}
-      onValueChange={(val) => table.getColumn("موافقة_اولي")?.setFilterValue(val || undefined)}
-    >
-      <SelectTrigger className="w-32 text-sm">
-        <SelectValue placeholder="موافقة أولى" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="APPROVED">مقبول</SelectItem>
-        <SelectItem value="PENDING">معلق</SelectItem>
-        <SelectItem value="REJECTED">مرفوض</SelectItem>
-      </SelectContent>
-    </Select>
 
-    <Select
-      value={(table.getColumn("موافقة_الثانيه")?.getFilterValue() as string) ?? ""}
-      onValueChange={(val) => table.getColumn("موافقة_الثانيه")?.setFilterValue(val || undefined)}
-    >
-      <SelectTrigger className="w-32 text-sm">
-        <SelectValue placeholder="ثانية موافقة" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="APPROVED">مقبول</SelectItem>
-        <SelectItem value="PENDING">معلق</SelectItem>
-        <SelectItem value="REJECTED">مرفوض</SelectItem>
-      </SelectContent>
-    </Select>
+
+
+  <Select
+  value={(table.getColumn("موافقة_الثانيه")?.getFilterValue() as string) ?? "ALL"}
+  onValueChange={(val) => {
+    table.getColumn("موافقة_الثانيه")?.setFilterValue(val === "ALL" ? undefined : val);
+  }}
+>
+  <SelectTrigger className="w-36 text-sm rounded-lg">
+    <SelectValue placeholder="موافقة ثانية" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="ALL">موافقة ثانية</SelectItem>
+    <SelectItem value="APPROVED">مقبول</SelectItem>
+    <SelectItem value="PENDING">معلق</SelectItem>
+    <SelectItem value="REJECTED">مرفوض</SelectItem>
+  </SelectContent>
+</Select>
+ <Select
+  value={(table.getColumn("موافقة_اولي")?.getFilterValue() as string) ?? "ALL"}
+  onValueChange={(val) => {
+    table.getColumn("موافقة_اولي")?.setFilterValue(val === "ALL" ? undefined : val);
+  }}
+>
+  <SelectTrigger className="w-36 text-sm rounded-lg">
+    <SelectValue placeholder="موافقة أولى" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="ALL">موافقة أولى</SelectItem>
+    <SelectItem value="APPROVED">مقبول</SelectItem>
+    <SelectItem value="PENDING">معلق</SelectItem>
+    <SelectItem value="REJECTED">مرفوض</SelectItem>
+  </SelectContent>
+</Select>
   </div>
 
   {/* Right Section: Search */}
-  <Input
-    type="text"
-    placeholder="بحث عن طلب..."
-    value={table.getState().globalFilter ?? ""}
-    onChange={(e) => table.setGlobalFilter(e.target.value)}
-    className="w-full md:w-72"
-  />
+  <div className="w-full md:w-72">
+    <Input
+    dir="rtl"
+      type="text"
+      placeholder="بحث..."
+      value={table.getState().globalFilter ?? ""}
+      onChange={(e) => table.setGlobalFilter(e.target.value)}
+      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+    />
+  </div>
 </div>
 
 
