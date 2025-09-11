@@ -26,11 +26,10 @@ export async function GET(request: Request) {
 
       return NextResponse.json(employee);
     }
-
-    const id = searchParams.get("id");
-    if (id) {
-      const employee = await prisma.request.findUnique({
-        where: { id },
+    const first_done = searchParams.get("first_done");
+    if (first_done) {
+      const employee = await prisma.request.findMany({
+        where: { firstApprovment:first_done },
       });
 
       if (!employee) {
@@ -42,6 +41,54 @@ export async function GET(request: Request) {
 
       return NextResponse.json(employee);
     }
+const employeeId_related = searchParams.get("employeeId_related");
+
+if (employeeId_related) {
+
+const relatedRequests = await prisma.request.findMany({
+  where: {
+    RequestReceivers: {
+      some: {
+        OR: [
+          { employeeId: employeeId_related },
+          { recieverId: employeeId_related },
+        ],
+      },
+    },
+  },
+  include: {
+    RequestReceivers: true, // optional: include receivers if needed
+  },
+});
+
+console.log(relatedRequests);
+
+      return NextResponse.json(relatedRequests);
+
+  // console.log(reqs);
+}
+
+    const id = searchParams.get("id");
+    if (id) {
+ const employee = await prisma.request.findUnique({
+    where: { id }, // Find request by ID
+    include: {
+      RequestReceivers: true, // Include related receivers
+    },
+  });
+
+  // console.log(employee);
+
+      if (!employee) {
+        return NextResponse.json(
+          { error: "Employee not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(employee);
+    }
+    
 
     const status = searchParams.get("status");
     if (status) {
@@ -91,6 +138,21 @@ export async function GET(request: Request) {
 
       return NextResponse.json(employees);
     }
+
+
+
+    const firstApprovment=searchParams.get("firstApprovment")
+
+        if (firstApprovment) {
+      const reqs = await prisma.request.findMany({
+        where: { firstApprovment:firstApprovment },
+      });
+
+    
+
+      return NextResponse.json(reqs);
+    }
+
 
     const requests = await prisma.request.findMany();
 
@@ -193,15 +255,16 @@ export async function PUT(request: Request) {
       replier1_Comment,
       replier2_Comment,
       approvalDate1,
-      approvalDate2
+      approvalDate2,
+      status
     } = data;
     // Basic validation
-    if (!employeeId ) {
-      return NextResponse.json(
-        { error: "employeeId  is required" },
-        { status: 400 }
-      );
-    }
+    // if (!employeeId ) {
+    //   return NextResponse.json(
+    //     { error: "employeeId  is required" },
+    //     { status: 400 }
+    //   );
+    // }
 
     const updatedEmployee = await prisma.request.update({
       where: { id },
@@ -212,14 +275,15 @@ export async function PUT(request: Request) {
       replier1_Comment,
       replier2_Comment,
       approvalDate1,
-      approvalDate2
+      approvalDate2,
+      status
       },
     });
 
     return NextResponse.json(updatedEmployee);
-  } catch (error) {
+  } catch (error:any) {
     return NextResponse.json(
-      { error: "Failed to update employee" },
+      { error: error },
       { status: 500 }
     );
   }

@@ -58,6 +58,7 @@ model Employee {
   employeeId String  @unique
   position  String
   project   String?
+  employeeType EMPTYPE @default(DRIVER)
 
   // 1-to-many: Creator of requests
   requestsCreated Request[] @relation("RequestCreator")
@@ -71,7 +72,7 @@ model Employee {
 model Request {
   id        String   @id @default(cuid())
   employeeId String
-  status    String   @default("pending")
+  status    String   @default("PENDING")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   requestType String
@@ -106,4 +107,10 @@ model RequestReceivers {
   employee Employee @relation(fields: [employeeId], references: [employeeId])
 
   @@id([requestId, employeeId])
+}
+
+enum EMPTYPE{
+
+  DRIVER
+  ADMIN
 }

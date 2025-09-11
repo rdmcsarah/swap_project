@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Calendar21 from "@/components/calender";
 
 interface FormData {
@@ -74,6 +74,7 @@ const [showToCalendar, setShowToCalendar] = useState(false);
   tomorrow.setDate(tomorrow.getDate() + 1);
   const isAfterNoon = now.getHours() >= 12;
   const disabledDays = [{ before: today }, today, ...(isAfterNoon ? [tomorrow] : [])];
+  const { empcode } = useParams()
   
 
   // Fetch employees
@@ -88,7 +89,6 @@ const [showToCalendar, setShowToCalendar] = useState(false);
         setError("تعذر تحميل بيانات الموظفين");
       }
     };
-    
     getEmployees();
   }, []);
 
@@ -186,11 +186,12 @@ const [showToCalendar, setShowToCalendar] = useState(false);
         status: "pending",
         shiftType1: formData.shiftType,
         shiftType2: formData.shiftType2,
-        shiftDate1: fromDate,
-        shiftDate2:toDate,
+        shiftDate1: formData.shiftDate1,
+        shiftDate2: formData.shiftDate2,
         requesterComment: formData.requesterComment,
         recieverId: formData.receiverId,
       };
+  console.log(employeeId)
 
       const response = await fetch("/api/requests", {
         method: "POST",

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/generated/prisma"; // ✅ match your actual output path
+import { EMPTYPE, PrismaClient } from "@/generated/prisma"; // ✅ match your actual output path
 import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
@@ -70,6 +70,22 @@ export async function GET(request: Request) {
       return NextResponse.json(employees);
     }
 
+      const empType = searchParams.get("empType");
+    if (empType) {
+      const employee = await prisma.employee.findFirst({
+    where: { employeeType: {not: empType as EMPTYPE}  }, // ✅ cast to enum
+      });
+
+      if (!employee) {
+        return NextResponse.json(
+          { error: "Employee not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(employee);
+    }
+
     const position = searchParams.get("position");
     if (position) {
       const employees = await prisma.employee.findMany({
@@ -116,7 +132,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { email, name, phone, department, employeeId, position, project } = data;
+    const { email, name, phone, department, employeeId, position, project,employeeType } = data;
 
     // Basic validation
     if (!employeeId || !name) {
@@ -136,6 +152,7 @@ export async function POST(request: Request) {
         employeeId,
         position,
         project,
+        employeeType
       },
     });
 

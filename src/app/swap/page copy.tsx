@@ -80,6 +80,8 @@ const DateRangeSubmissionForm = () => {
       setError("Failed to fetch employees. Please try again later.");
     }
   }, []);
+
+
 function isAfterNoon(): boolean {
   const now = new Date();
   return now.getHours() >= 12; // 12 or later (afternoon)
@@ -91,12 +93,22 @@ function isAfterNoon(): boolean {
     return [...employees].sort((a, b) => a.name.localeCompare(b.name));
   }, [employees]);
 
-  const filteredEmployees = useMemo(() => {
-    if (!searchTerm.trim()) return sortedEmployees;
-    return sortedEmployees.filter((emp) =>
-      emp.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, sortedEmployees]);
+  // const filteredEmployees = useMemo(() => {
+  //   if (!searchTerm.trim()) return sortedEmployees;
+  //   return sortedEmployees.filter((emp) =>
+  //     emp.name.toLowerCase().includes(searchTerm.toLowerCase())
+  //   );
+  // }, [searchTerm, sortedEmployees]);
+const filteredEmployees = useMemo(() => {
+  if (!searchTerm.trim()) return sortedEmployees;
+
+  const term = searchTerm.toLowerCase().trim();
+
+  return sortedEmployees.filter((emp) =>
+    `${emp.employeeId}-${emp.name}`.toLowerCase().includes(term)
+  );
+}, [searchTerm, sortedEmployees]);
+
 
   const handleSelect = (emp: any) => {
     setFormData({ ...formData, receiverId: emp.employeeId });
@@ -117,6 +129,23 @@ function isAfterNoon(): boolean {
         throw new Error("Employee ID not found. Please log in again.");
       }
 
+      const tommorrow = new Date();
+      tommorrow.setDate(tommorrow.getDate() + 1);
+      console.log("yydddddddd", tommorrow);
+
+      const shiftDate1Date = formData.shiftDate1 ? new Date(formData.shiftDate1) : null;
+      // Compare only the date part (ignore time)
+      const isSameDay =
+        shiftDate1Date &&
+        tommorrow &&
+        shiftDate1Date.getFullYear() === tommorrow.getFullYear() &&
+        shiftDate1Date.getMonth() === tommorrow.getMonth() &&
+        shiftDate1Date.getDate() === tommorrow.getDate();
+        if (isSameDay && isAfterNoon()) {
+          setError("لا يمكن تقديم طلب لتبادل الوردية ليوم الغد بعد الظهر");
+          setIsSubmitting(false);
+          return;
+        }
       const requestData = {
         employeeId,
         requestType: "shift-exchange",
@@ -125,9 +154,9 @@ function isAfterNoon(): boolean {
         shiftType2: formData.shiftType2,
 
         // shiftDate1: formData.shiftDate1 ? new Date(formData.shiftDate1) : null,
-        shiftDate1: (isAfterNoon()?(null): (formData.shiftDate1) )? new Date(formData.shiftDate1) : null,
+        shiftDate1:formData.shiftDate1,
 
-        shiftDate2: formData.shiftDate2 ? new Date(formData.shiftDate2) : null,
+        shiftDate2: formData.shiftDate2 ,
         requesterComment: formData.requesterComment,
         // Assuming you'll select a receiver (employee to exchange with)
         // receivers: {
@@ -259,7 +288,7 @@ return (
       <input type="hidden" name="requestType" value="shift-exchange" />
 
       {/* وردية الموظف الحالي */}
-      <section className="bg-gray-50 p-6 rounded-lg border border-gray-200" onClick={() => resetCalendar(true)}>
+      <section className="bg-gray-50 p-6 rounded-lg border border-gray-200" >
         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
           <svg className="w-5 h-5 ml-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
@@ -281,8 +310,10 @@ return (
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
             >
               <option value="">اختر نوع الوردية</option>
-              <option value="morning">صباحية (8ص - 4م)</option>
-              <option value="evening">مسائية (4م - 12ص)</option>
+              <option value="morning">صباحية </option>
+              <option value="evening">مسائية </option>
+              <option value="afternoon">ليليه </option>
+
             </select>
           </div>
 
@@ -320,7 +351,7 @@ return (
 
       {/* Toggle Button */}
       <button 
-        type="button"
+        type="button" 
         onClick={() => setShowCalendar(!showCalendar)}
         className="mb-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
       >
@@ -352,8 +383,9 @@ return (
 
       {/* Calendar component toggled */}
       {showCalendar && (
-        <div ref={calendarRef} className="relative z-50" onClick={() => resetCalendar(true)}>
-{/* <Calendar21
+        <div ref={calendarRef} className="relative z-50"  >
+
+<Calendar21 
   value={
     formData.shiftDate1 && formData.shiftDate2
       ? {
@@ -368,58 +400,31 @@ return (
     const fromDate = range?.from;
     const toDate = range?.to;
 
-    setFormData((prev) => {
-      // case 1: already selected a full range → reset and start over
-      if (prev.shiftDate1 && prev.shiftDate2 && fromDate && !toDate) {
-        return {
+    // Booking.com behaviour:
+    // - If there is already a full range selected (shiftDate1 & shiftDate2)
+    //   and user clicks any other date, treat that click as a new "from" date:
+    //   clear the previous "to" and set "from" to the clicked date.
+    // - Otherwise keep normal range behaviour.
+    if (formData.shiftDate1 && formData.shiftDate2) {
+      const prevFrom = new Date(formData.shiftDate1);
+      // If user clicked a single date (no to) OR clicked a different start date,
+      // reset the to-date and make the clicked date the new from-date.
+      if (fromDate && (!toDate || fromDate.getTime() !== prevFrom.getTime())) {
+        setFormData((prev) => ({
           ...prev,
           shiftDate1: fromDate.toLocaleDateString("sv-SE"),
           shiftDate2: "",
-        };
+        }));
+        return;
       }
+    }
 
-      // case 2: normal behavior
-      return {
-        ...prev,
-        shiftDate1: fromDate ? fromDate.toLocaleDateString("sv-SE") : "",
-        shiftDate2: toDate ? toDate.toLocaleDateString("sv-SE") : "",
-      };
-    });
-  }}
-/> */}
-
-<Calendar21
-  value={
-    formData.shiftDate1 && formData.shiftDate2
-      ? {
-          from: new Date(formData.shiftDate1),
-          to: new Date(formData.shiftDate2),
-        }
-      : formData.shiftDate1
-      ? { from: new Date(formData.shiftDate1) }
-      : null
-  }
-  onChange={(range: { from?: Date; to?: Date } | undefined) => {
-    const fromDate = range?.from;
-    const toDate = range?.to;
-
-    setFormData((prev) => {
-      // 🟢 Case 1: if prev already had a complete range and user clicked again
-      if (prev.shiftDate1 && prev.shiftDate2 && fromDate) {
-        return {
-          ...prev,
-          shiftDate1: fromDate.toLocaleDateString("sv-SE"),
-          shiftDate2: "",
-        };
-      }
-
-      // 🟢 Case 2: normal range picking
-      return {
-        ...prev,
-        shiftDate1: fromDate ? fromDate.toLocaleDateString("sv-SE") : "",
-        shiftDate2: toDate ? toDate.toLocaleDateString("sv-SE") : "",
-      };
-    });
+    // Normal range selection behavior (either setting from, or from+to)
+    setFormData((prev) => ({
+      ...prev,
+      shiftDate1: fromDate ? fromDate.toLocaleDateString("sv-SE") : "",
+      shiftDate2: toDate ? toDate.toLocaleDateString("sv-SE") : "",
+    }));
   }}
 />
 
@@ -471,7 +476,7 @@ return (
                 onClick={() => handleSelect(emp)}
                 className="px-4 py-2 hover:bg-green-100 cursor-pointer"
               >
-                {emp?.name}
+                {emp?.employeeId}-{emp?.name}
               </li>
             ))
           ) : (
@@ -496,8 +501,9 @@ return (
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
             >
               <option value="">اختر نوع الوردية</option>
-              <option value="morning">صباحية (8ص - 4م)</option>
-              <option value="evening">مسائية (4م - 12ص)</option>
+              <option value="morning">صباحية</option>
+              <option value="evening">مسائية </option>
+                  <option value="afternoon">ليليه </option>
             </select>
           </div>
         </div>
@@ -521,7 +527,7 @@ return (
 
       {/* زر الإرسال */}
       <div className="pt-4">
-        <button
+        {/* <button
 
           type="submit"
           disabled={isSubmitting}
@@ -536,7 +542,7 @@ return (
         
         }
         >
-          {isSubmitting ? (
+          {isSubmitting && formData.shiftDate1 ? (
             <>
               <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -553,7 +559,71 @@ return (
           
             </>
           )}
-        </button>
+        </button> */}
+
+        <button
+  type="submit"
+  disabled={
+    isSubmitting || 
+    !formData.shiftType || 
+    !formData.shiftDate1 || 
+    !formData.shiftDate2
+  }
+  className={`px-4 py-2 rounded text-white flex items-center justify-center ${
+    isSubmitting || !formData.shiftType || !formData.shiftDate1 || !formData.shiftDate2 || !formData.shiftType2 || !formData.receiverId
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-green-600 hover:bg-green-700"
+  }`}
+>
+  {isSubmitting  ? (
+    <>
+      <svg
+        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        ></circle>
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2
+             5.291A7.962 7.962 0 014 12H0c0 3.042
+             1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+      جاري معالجة الطلب...
+    </>
+  ) : (
+    <>
+      <svg
+        className="w-5 h-5 ml-2"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fillRule="evenodd"
+          d="M10 18a8 8 0 100-16
+             8 8 0 000 16zm3.707-8.707l-3-3a1
+             1 0 00-1.414 1.414L10.586 9H7a1
+             1 0 100 2h3.586l-1.293
+             1.293a1 1 0 101.414
+             1.414l3-3a1 1 0 000-1.414z"
+          clipRule="evenodd"
+        />
+      </svg>
+      إرسال طلب التبديل
+    </>
+  )}
+</button>
+
       </div>
     </form>
   </div>
