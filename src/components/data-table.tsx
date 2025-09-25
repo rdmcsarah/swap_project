@@ -105,6 +105,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 // const router = useRouter();
 import { FilterFn } from "@tanstack/react-table";
+import { useState } from "react";
 
 type Request = {
   id: string;
@@ -125,7 +126,6 @@ type Request = {
   approvalDate1: string;
   approvalDate2: string;
 };
-
 
 type Data = {
   map(arg0: ({ id }: { id: any }) => any): UniqueIdentifier[];
@@ -152,150 +152,182 @@ export const requestSchema = z.object({
   approvalDate2: z.string(),
 });
 
-
 const statusMap: Record<string, string> = {
   PENDING: "قيد الانتظار",
-  APPROVED:"تمت الموافقه"
+  APPROVED: "تمت الموافقه",
+  REJECTED: "مرفوض",
 };
 
 const requestTypeMap: Record<string, string> = {
   "shift-exchange": "تبديل المناوبة",
 };
 
-
 const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
+  console.log(
+    "filterValue: ########################################",
+    filterValue
+  );
   if (!filterValue) return true;
-  
+
   const searchTerm = filterValue.toLowerCase();
   const originalData = row.original;
-  
-  console.log("llll: ",originalData.requestType)
+
+  console.log("llll: ", originalData.requestType);
   // Search across multiple relevant fields
   return (
-    String(originalData.id || '').toLowerCase().includes(searchTerm) ||
-    String(originalData.employeeId || '').toLowerCase().includes(searchTerm) ||
-    String(originalData.requestType || '').toLowerCase().includes(searchTerm) ||
-    String(originalData.status || '').toLowerCase().includes(searchTerm) ||
-    String(originalData.firstApproval || '').toLowerCase().includes(searchTerm)
+    String(originalData.id || "")
+      .toLowerCase()
+      .includes(searchTerm) ||
+    String(originalData.employeeId || "")
+      .toLowerCase()
+      .includes(searchTerm) ||
+    String(originalData.requestType || "")
+      .toLowerCase()
+      .includes(searchTerm) ||
+    String(originalData.status || "")
+      .toLowerCase()
+      .includes(searchTerm) ||
+    String(originalData.firstApproval || "")
+      .toLowerCase()
+      .includes(searchTerm)
   );
 };
-
-export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
+export const getRequestColumns = (
+  employeeId: string | null
+): ColumnDef<z.infer<typeof requestSchema>>[] => [
+  // export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
   {
     accessorKey: "عرض",
     header: () => <div className="text-center font-semibold">عرض</div>,
-    cell: ({ row }) => (
-      <div className="flex justify-center">
-        <Button className="bg-green-700 hover:bg-green-500 rounded-xl px-6 py-2 text-white">
-          <Link href={`/${row.original.id}`}>عرض</Link>
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const rowEmployeeId = row.original.employeeId;
+
+      return (
+        <div className="flex justify-center">
+          {rowEmployeeId === employeeId ? (
+            <Button className="bg-green-700 hover:bg-green-500 rounded-xl px-10 py-2 text-white">
+              <Link href={`/${row.original.id}`}>عرض</Link>
+            </Button>
+          ) : (
+            <Button className="bg-green-900 hover:bg-green-500 rounded-xl px-8 py-2 text-white">
+              <Link href={`/${row.original.id}`}> اتخذ اجراء</Link>
+            </Button>
+          )}
+        </div>
+      );
+    },
   },
-{
-  accessorKey: "موافقة_الثانيه",
-  header: () => <div className="text-center font-semibold">ثانية موافقة</div>,
-  cell: ({ row }) => {
-    const status = row.original.secondApprovment ?? "PENDING";
-    const statusLabel =
-      status === "PENDING"
-        ? "قيد الانتظار"
-        : statusMap[status] || status;
+  {
+    accessorKey: "موافقة_الثانيه",
+    header: () => (
+      <div className="text-center font-semibold"> موافقة ثانية </div>
+    ),
+    cell: ({ row }) => {
+      const status = row.original.secondApprovment ?? "PENDING";
+      const statusLabel =
+        status === "PENDING" ? "قيد الانتظار" : statusMap[status] || status;
 
-    let badgeColor = "bg-yellow-100 text-yellow-700 border-yellow-300"; // default pending
-    if (status === "APPROVED") {
-      badgeColor = "bg-green-100 text-green-700 border-green-300";
-    } else if (status === "REJECTED") {
-      badgeColor = "bg-red-100 text-red-700 border-red-300";
-    }
+      let badgeColor = "bg-yellow-100 text-yellow-700 border-yellow-300"; // default pending
+      if (status === "APPROVED") {
+        badgeColor = "bg-green-100 text-green-700 border-green-300";
+      } else if (status === "REJECTED") {
+        badgeColor = "bg-red-100 text-red-700 border-red-300";
+      }
 
-    return (
-      <div className="flex justify-center">
-        <Badge
-          variant="outline"
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${badgeColor}`}
-        >
-          {/* {status === "APPROVED" ? (
+      return (
+        <div className="flex justify-center">
+          <Badge
+            variant="outline"
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${badgeColor}`}
+          >
+            {/* {status === "APPROVED" ? (
             <IconCircleCheckFilled className="w-4 h-4" />
           ) : (
             <IconLoader className="w-4 h-4" />
           )} */}
-          {statusLabel}
-        </Badge>
-      </div>
-    );
+            {statusLabel}
+          </Badge>
+        </div>
+      );
+    },
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue) return true;
+      const value = row.original.secondApprovment ?? "PENDING";
+      return value === filterValue;
+    },
   },
-  filterFn: (row, columnId, filterValue) => {
-    if (!filterValue) return true;
-    const value = row.original.secondApprovment ?? "PENDING";
-    return value === filterValue;
-  },
-},
-{
-  accessorKey: "موافقة_اولي",
-  header: () => <div className="text-center font-semibold">موافقة أولى</div>,
-  cell: ({ row }) => {
-    const status = row.original.firstApprovment ?? "PENDING";
-    const statusLabel =
-      status === "PENDING"
-        ? "قيد الانتظار"
-        : statusMap[status] || status;
+  {
+    accessorKey: "موافقة_اولي",
+    header: () => <div className="text-center font-semibold">موافقة أولى</div>,
+    cell: ({ row }) => {
+      const status = row.original.firstApprovment ?? "PENDING";
+      const statusLabel =
+        status === "PENDING" ? "قيد الانتظار" : statusMap[status] || status;
 
-    let badgeColor = "bg-yellow-100 text-yellow-700 border-yellow-300"; // default pending
-    if (status === "APPROVED") {
-      badgeColor = "bg-green-100 text-green-700 border-green-300";
-    } else if (status === "REJECTED") {
-      badgeColor = "bg-red-100 text-red-700 border-red-300";
-    }
+      let badgeColor = "bg-yellow-100 text-yellow-700 border-yellow-300"; // default pending
+      if (status === "APPROVED") {
+        badgeColor = "bg-green-100 text-green-700 border-green-300";
+      } else if (status === "REJECTED") {
+        badgeColor = "bg-red-100 text-red-700 border-red-300";
+      }
 
-    return (
-      <div className="flex justify-center">
-        <Badge
-          variant="outline"
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${badgeColor}`}
-        >
-          {/* {status === "APPROVED" ? (
+      return (
+        <div className="flex justify-center">
+          <Badge
+            variant="outline"
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${badgeColor}`}
+          >
+            {/* {status === "APPROVED" ? (
             <IconCircleCheckFilled className="w-4 h-4" />
           ) : (
             // <IconLoader className="w-4 h-4" />
           )} */}
-          {statusLabel}
-        </Badge>
-      </div>
-    );
+            {statusLabel}
+          </Badge>
+        </div>
+      );
+    },
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue) return true;
+      const value = row.original.firstApprovment ?? "PENDING";
+      return value === filterValue;
+    },
   },
-  filterFn: (row, columnId, filterValue) => {
-    if (!filterValue) return true;
-    const value = row.original.firstApprovment ?? "PENDING";
-    return value === filterValue;
+
+  {
+    accessorKey: "تاريخ",
+    header: () => <div className="text-center font-semibold">تاريخ</div>,
+    cell: ({ row }) => {
+      const date = new Date(row.original.createdAt);
+      // 🟢 Format the date in Arabic (long format, e.g. 11 سبتمبر 2025)
+      const formattedDate = new Intl.DateTimeFormat("ar-EG", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(date);
+
+      return (
+        <div className="flex justify-center">
+          <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
+            {formattedDate}
+          </Badge>
+        </div>
+      );
+    },
   },
-},
-
-{
-  accessorKey: "تاريخ",
-  header: () => <div className="text-center font-semibold">تاريخ</div>,
-  cell: ({ row }) => {
-    const date = new Date(row.original.createdAt);
-    // 🟢 Format the date in Arabic (long format, e.g. 11 سبتمبر 2025)
-    const formattedDate = new Intl.DateTimeFormat("ar-EG", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }).format(date);
-
-    return (
+    {
+    accessorKey: "employeeId",
+    header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
+    cell: ({ row }) => (
       <div className="flex justify-center">
-        <Badge
-          variant="outline"
-          className="px-3 py-1.5 rounded-lg text-sm"
-        >
-          {formattedDate}
+        <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
+          {row.original.employeeId}
         </Badge>
       </div>
-    );
+    ),
+
+    enableHiding: false,
   },
-}
-,
   {
     accessorKey: "مقدم_الطلب",
     header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
@@ -307,8 +339,7 @@ export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
       </div>
     ),
 
-        enableHiding: true,
-
+    enableHiding: true,
   },
   {
     accessorKey: "الطلب_رقم",
@@ -321,20 +352,13 @@ export const requestColumns: ColumnDef<z.infer<typeof requestSchema>>[] = [
       </div>
     ),
 
-
     enableHiding: true,
   },
-
 ];
-
-
-
-
-
-
 
 export function DataTable({ data }: { data: Request[] }) {
   const router = useRouter();
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
 
   const [tableData, setTableData] = React.useState(() => data);
   const [rowSelection, setRowSelection] = React.useState({});
@@ -354,23 +378,24 @@ export function DataTable({ data }: { data: Request[] }) {
     useSensor(TouchSensor, {}),
     useSensor(KeyboardSensor, {})
   );
-const [globalFilter, setGlobalFilter] = React.useState("");
-
-
-
-
+  const [globalFilter, setGlobalFilter] = React.useState("");
+  // Get employeeId from localStorage (client-side only)
+  React.useEffect(() => {
+    const id = localStorage.getItem("employeeId");
+    setEmployeeId(id);
+  }, []);
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => tableData?.map(({ id }) => id) || [],
-    [tableData, router]
+    [tableData, router, employeeId]
   );
 
+  const memoizedColumns = React.useMemo(
+    () => getRequestColumns(employeeId),
+    [employeeId]
+  );
 
-
-
-  const memoizedColumns = React.useMemo(() => requestColumns, []);
-
-  console.log("dataa in table", tableData);
+  // console.log("dataa in table", tableData);
 
   const table = useReactTable({
     data: tableData ?? [],
@@ -378,17 +403,23 @@ const [globalFilter, setGlobalFilter] = React.useState("");
 
     state: {
       sorting,
-      columnVisibility,
+      // columnVisibility,
+      columnVisibility: {
+    الطلب_رقم: false, // 👈 hide by default
+    مقدم_الطلب: false, // 👈 hide by default
+    employeeId: false, // 👈 hide by default
+    
+    ...columnVisibility,
+  },
       rowSelection,
       columnFilters,
       pagination,
       globalFilter, // ✅ Add this
-
     },
     // getRowId: (row: z.infer<typeof requestSchema>) => row.id.toString(),
     getRowId: (row, index) => row.id ?? index.toString(),
-  onGlobalFilterChange: setGlobalFilter, // ✅ Add this
-  globalFilterFn, // ✅ Add this
+    onGlobalFilterChange: setGlobalFilter, // ✅ Add this
+    globalFilterFn, // ✅ Add this
 
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -416,99 +447,127 @@ const [globalFilter, setGlobalFilter] = React.useState("");
   }
 
   return (
- <Tabs defaultValue="outline" className="w-full flex-col gap-6">
-  {/* Top Toolbar */}
-<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-4 py-3 bg-white border-b border-gray-200 rounded-t-lg">
-  {/* Left Section: Main Action */}
-  <div className="flex items-center">
-    <Button
-      onClick={() => router.push("/swap")}
-      className="bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg px-4 py-2"
+   <Tabs defaultValue="outline" className="w-full flex-col gap-6">
+  {/* Toolbar Section */}
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-4 py-4 bg-white border-b border-gray-200 rounded-t-lg shadow-sm">
+    {/* Left: Main Action */}
+    <div>
+      <Button
+        onClick={() => router.push("/swap")}
+        className="bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg px-4 py-2"
+      >
+        + تقديم طلب
+      </Button>
+    </div>
+
+    {/* Middle: Filters & Column Manager */}
+    <div className="flex flex-wrap items-center gap-3">
+      {/* Column Toggle */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-2 rounded-lg">
+            <IconLayoutColumns className="w-4 h-4" />
+            <span className="hidden sm:inline">إدارة الأعمدة</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-48">
+          {table.getAllColumns()
+            .filter((col) => col.getCanHide())
+            .map((col) => (
+              <DropdownMenuCheckboxItem
+                key={col.id}
+                checked={col.getIsVisible()}
+                onCheckedChange={(val) => col.toggleVisibility(!!val)}
+                className="text-sm"
+              >
+                {col.id}
+              </DropdownMenuCheckboxItem>
+            ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Filter: Second Approval */}
+      <Select
+        value={
+          (table.getColumn("موافقة_الثانيه")?.getFilterValue() as string) ??
+          "ALL"
+        }
+        onValueChange={(val) =>
+          table
+            .getColumn("موافقة_الثانيه")
+            ?.setFilterValue(val === "ALL" ? undefined : val)
+        }
+      >
+        <SelectTrigger className="w-36 text-sm rounded-lg">
+          <SelectValue placeholder="موافقة ثانية" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="ALL">موافقة ثانية</SelectItem>
+           <SelectItem value="APPROVED">تمت الموافقه</SelectItem>
+          <SelectItem value="PENDING">قيد الانتظار</SelectItem>
+          <SelectItem value="REJECTED">مرفوض</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* Filter: First Approval */}
+      <Select
+        value={
+          (table.getColumn("موافقة_اولي")?.getFilterValue() as string) ??
+          "ALL"
+        }
+        onValueChange={(val) =>
+          table
+            .getColumn("موافقة_اولي")
+            ?.setFilterValue(val === "ALL" ? undefined : val)
+        }
+      >
+        <SelectTrigger className="w-36 text-sm rounded-lg">
+          <SelectValue placeholder="موافقة أولى" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="ALL">موافقة أولى</SelectItem>
+          <SelectItem value="APPROVED">تمت الموافقه</SelectItem>
+          <SelectItem value="PENDING">قيد الانتظار</SelectItem>
+          <SelectItem value="REJECTED">مرفوض</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    {/* Right: Search Input */}
+  <div className="w-full md:w-72 relative">
+  <span className="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
     >
-      + تقديم طلب
-    </Button>
-  </div>
-
-  {/* Middle Section: Filters */}
-  <div className="flex flex-wrap items-center gap-3">
-    {/* Column Toggle */}
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 rounded-lg">
-          <IconLayoutColumns className="w-4 h-4" />
-          <span className="hidden sm:inline">إدارة الأعمدة</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-48">
-        {table.getAllColumns()
-          .filter((col) => col.getCanHide())
-          .map((col) => (
-            <DropdownMenuCheckboxItem
-              key={col.id}
-              checked={col.getIsVisible()}
-              onCheckedChange={(val) => col.toggleVisibility(!!val)}
-              className="text-sm"
-            >
-              {col.id}
-            </DropdownMenuCheckboxItem>
-          ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-
-    {/* Approval Filters */}
-
-
-
-  <Select
-  value={(table.getColumn("موافقة_الثانيه")?.getFilterValue() as string) ?? "ALL"}
-  onValueChange={(val) => {
-    table.getColumn("موافقة_الثانيه")?.setFilterValue(val === "ALL" ? undefined : val);
-  }}
->
-  <SelectTrigger className="w-36 text-sm rounded-lg">
-    <SelectValue placeholder="موافقة ثانية" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="ALL">موافقة ثانية</SelectItem>
-    <SelectItem value="APPROVED">مقبول</SelectItem>
-    <SelectItem value="PENDING">معلق</SelectItem>
-    <SelectItem value="REJECTED">مرفوض</SelectItem>
-  </SelectContent>
-</Select>
- <Select
-  value={(table.getColumn("موافقة_اولي")?.getFilterValue() as string) ?? "ALL"}
-  onValueChange={(val) => {
-    table.getColumn("موافقة_اولي")?.setFilterValue(val === "ALL" ? undefined : val);
-  }}
->
-  <SelectTrigger className="w-36 text-sm rounded-lg">
-    <SelectValue placeholder="موافقة أولى" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="ALL">موافقة أولى</SelectItem>
-    <SelectItem value="APPROVED">مقبول</SelectItem>
-    <SelectItem value="PENDING">معلق</SelectItem>
-    <SelectItem value="REJECTED">مرفوض</SelectItem>
-  </SelectContent>
-</Select>
-  </div>
-
-  {/* Right Section: Search */}
-  <div className="w-full md:w-72">
-    <Input
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
+      />
+    </svg>
+  </span>
+  <Input
     dir="rtl"
-      type="text"
-      placeholder="بحث..."
-      value={table.getState().globalFilter ?? ""}
-      onChange={(e) => table.setGlobalFilter(e.target.value)}
-      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
-    />
-  </div>
+    type="text"
+    placeholder="بحث..."
+    value={table.getState().globalFilter ?? ""}
+    onChange={(e) => table.setGlobalFilter(e.target.value)}
+    className="w-full pl-3 pr-10 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+  />
 </div>
 
+  </div>
 
-  {/* Table Section */}
-  <TabsContent value="outline" className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
+  {/* Table Content */}
+  <TabsContent
+    value="outline"
+    className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+  >
     <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
       <DndContext
         collisionDetection={closestCenter}
@@ -518,25 +577,33 @@ const [globalFilter, setGlobalFilter] = React.useState("");
         id={sortableId}
       >
         <Table>
-          {/* Table Header */}
           <TableHeader className="bg-gray-100 sticky top-0 z-10 text-gray-700 text-sm">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} colSpan={header.colSpan} className="px-4 py-3">
+                  <TableHead
+                    key={header.id}
+                    colSpan={header.colSpan}
+                    className="px-4 py-3 text-center"
+                  >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
 
-          {/* Table Body */}
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
+              <SortableContext
+                items={dataIds}
+                strategy={verticalListSortingStrategy}
+              >
                 {table.getRowModel().rows.map((row) => (
                   <DraggableRow key={row.id} row={row} />
                 ))}
@@ -544,7 +611,7 @@ const [globalFilter, setGlobalFilter] = React.useState("");
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={requestColumns.length}
+                  colSpan={getRequestColumns.length}
                   className="h-24 text-center text-gray-500"
                 >
                   لا توجد نتائج
@@ -574,7 +641,9 @@ const [globalFilter, setGlobalFilter] = React.useState("");
             onValueChange={(value) => table.setPageSize(Number(value))}
           >
             <SelectTrigger size="sm" className="w-20" id="rows-per-page">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
+              <SelectValue
+                placeholder={table.getState().pagination.pageSize}
+              />
             </SelectTrigger>
             <SelectContent side="top">
               {[10, 20, 30, 40, 50].map((pageSize) => (
@@ -587,68 +656,64 @@ const [globalFilter, setGlobalFilter] = React.useState("");
         </div>
 
         {/* Page Navigation */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">
-            صفحة {table.getState().pagination.pageIndex + 1} من {table.getPageCount()}
-          </span>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <IconChevronsLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <IconChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <IconChevronRight className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <IconChevronsRight className="w-4 h-4" />
-            </Button>
-          </div>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-8"
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()}
+          >
+            <IconChevronsLeft className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-8"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            <IconChevronLeft className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-8"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <IconChevronRight className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-8"
+            onClick={() => table.setPageIndex(0)}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <IconChevronsRight className="w-4 h-4" />
+          </Button>
         </div>
       </div>
     </div>
   </TabsContent>
 
-  {/* Other Tabs (empty states) */}
-  <TabsContent value="past-performance" className="flex flex-col px-4 lg:px-6">
-    <div className="aspect-video w-full flex-1 rounded-lg border border-dashed bg-gray-50"></div>
+  {/* Other Tabs (placeholders) */}
+  <TabsContent value="past-performance" className="px-4 lg:px-6">
+    <div className="aspect-video w-full rounded-lg border border-dashed bg-gray-50" />
   </TabsContent>
-  <TabsContent value="key-personnel" className="flex flex-col px-4 lg:px-6">
-    <div className="aspect-video w-full flex-1 rounded-lg border border-dashed bg-gray-50"></div>
+
+  <TabsContent value="key-personnel" className="px-4 lg:px-6">
+    <div className="aspect-video w-full rounded-lg border border-dashed bg-gray-50" />
   </TabsContent>
-  <TabsContent value="focus-documents" className="flex flex-col px-4 lg:px-6">
-    <div className="aspect-video w-full flex-1 rounded-lg border border-dashed bg-gray-50"></div>
+
+  <TabsContent value="focus-documents" className="px-4 lg:px-6">
+    <div className="aspect-video w-full rounded-lg border border-dashed bg-gray-50" />
   </TabsContent>
 </Tabs>
 
   );
 }
-
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof requestSchema>> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({

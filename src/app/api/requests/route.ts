@@ -154,6 +154,61 @@ console.log(relatedRequests);
     }
 
 
+const notfication_empid = searchParams.get("notfication_empid");
+
+if (notfication_empid) {
+  console.log("Notification Employee ID:", notfication_empid);
+
+  const relatedRequests = await prisma.request.findMany({
+    where: {
+      OR: [
+        {
+          OR: [
+
+            {
+               RequestReceivers: {
+            some: {
+              recieverId: notfication_empid,
+            },
+          },
+            },{
+
+
+               secondApprovment: {
+            in: ["APPROVED", "REJECTED"],
+          },
+            }
+            
+          ],
+
+
+
+         
+         
+        },
+        {
+          employeeId: notfication_empid,
+          OR: [
+            {
+              firstApprovment: { in: ["APPROVED", "REJECTED"] },
+            },
+            {
+              secondApprovment: { in: ["APPROVED", "REJECTED"] },
+            },
+          ],
+        },
+      ],
+    },
+    include: {
+      RequestReceivers: true, // Optional, helpful for debugging
+    },
+  });
+
+  return NextResponse.json(relatedRequests);
+}
+
+
+
     const requests = await prisma.request.findMany();
 
     return NextResponse.json(requests);
