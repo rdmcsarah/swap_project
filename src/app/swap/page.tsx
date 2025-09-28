@@ -113,8 +113,21 @@ const [showToCalendar, setShowToCalendar] = useState(false);
         setShowToCalendar(false);
       }
     };
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowDropdown(false);
+        setShowFromCalendar(false);
+        setShowToCalendar(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, []);
 
   // Redirect when response comes
@@ -388,7 +401,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       </section>
 
       {/* الموظف الآخر */}
-      <section className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+  <section className="bg-gray-50 p-6 rounded-lg border border-gray-200">
         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
           <svg className="w-5 h-5 ml-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
@@ -396,7 +409,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           معلومات الموظف والوردية البديلة
         </h2>
 
-        <div className="relative">
+  <div className="relative" ref={dropdownRef}>
           <label htmlFor="receiverId" className="block text-sm font-medium text-gray-700 mb-2">
             الموظف المراد التبادل معه <span className="text-red-500">*</span>
           </label>

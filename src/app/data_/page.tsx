@@ -12,6 +12,19 @@ import { da } from "date-fns/locale"
 
 import React, { use, useEffect, useMemo,  useRef,useState } from "react";
 
+
+type Employee={
+    id: string
+    name: string
+    email: string
+    phone: string
+    department: string
+    position: string
+    employeeId: string
+    project: string
+    employeeType:string
+
+}
 type Request={
     id: string
     employeeId: string
@@ -30,20 +43,18 @@ type Request={
     replier2_Comment: string
     approvalDate1: string
     approvalDate2: string
-}
-type Employee={
-    id: string
-    name: string
-    email: string
-    phone: string
-    department: string
-    position: string
+    RequestReceivers: {
+    id: string  
+    requestId: string
     employeeId: string
-    project: string
-    employeeType:string
+    recieverId: string
+    employee: Employee
+    reciever: Employee
+  }[]
+
+
 
 }
-
 type Data = {
     requests: Request[]
     employees: Employee[]
@@ -57,6 +68,9 @@ const [dataa, setData] =  React.useState<Data>({
     requests: [],
     employees: []
 })
+
+
+
 
   const [employeeId, setEmployeeId] = useState<string | null>(null);
 
@@ -120,12 +134,15 @@ const [dataa, setData] =  React.useState<Data>({
 
           const fetchRequests = async () => {
       try {
-        // const res = await fetch(`/api/requests?employeeId=${employeeId}`);
         const res = await fetch(`/api/requests/?employeeId_related=${employeeId}`);
+
+
 
         if (!res.ok) throw new Error(`Requests fetch failed: ${res.status}`);
         const data = await res.json();
         setRequests(data);
+
+
       } catch (err) {
         console.error("Error fetching requests:", err);
       }
@@ -137,13 +154,25 @@ const [dataa, setData] =  React.useState<Data>({
   }, [employee]);
 
 
+  console.log("requestffffffffffs",requests)
+
 
 
  useEffect(() => {
   if (requests.length > 0 && employee) {
+    // ensure RequestReceivers is an array and keep shape consistent
+    const normalized = requests.map((r) => ({
+      ...r,
+      RequestReceivers: Array.isArray(r.RequestReceivers)
+        ? r.RequestReceivers
+        : r.RequestReceivers
+        ? [r.RequestReceivers]
+        : [],
+    }));
+
     setData({
-      requests,       // already array
-      employees: [employee]
+      requests: normalized,
+      employees: [employee],
     });
   }
 }, [requests, employee]);
@@ -182,6 +211,7 @@ console.log("dataa in pagexx",dataa.requests);
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   )}
 />
+
 
             </div>
           </div>

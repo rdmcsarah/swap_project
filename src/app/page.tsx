@@ -27,12 +27,12 @@ export default function HomePage() {
     console.log("تم حفظ رمز الموظف في localStorage:", employeeCode);
   };
 
-  const handleOptionSelect = (option: SetStateAction<string>) => {
-    setSelectedOption(option);
-    setIsDropdownOpen(false);
-    // هنا يمكنك التوجيه إلى الصفحة المناسبة بناءً على الاختيار
-    console.log("الخيار المحدد:", option);
-  };
+  // const handleOptionSelect = (option: SetStateAction<string>) => {
+  //   setSelectedOption(option);
+  //   setIsDropdownOpen(false);
+  //   // هنا يمكنك التوجيه إلى الصفحة المناسبة بناءً على الاختيار
+  //   console.log("الخيار المحدد:", option);
+  // };
 
   const clearEmployeeCode = () => {
     localStorage.removeItem("employeeId");
@@ -40,11 +40,11 @@ export default function HomePage() {
     setIsCodeSaved(false);
   };
 
-  const options = [
-    { id: "swap", label: "طلب تبديل", icon: <ReceiptEuro size={18} /> },
-    { id: "evaluation", label: "تقييم متدرب", icon: <User size={18} /> },
-    { id: "shadowing", label: "مرافقة سائق", icon: <User size={18} /> },
-  ];
+  // const options = [
+  //   { id: "swap", label: "طلب تبديل", icon: <ReceiptEuro size={18} /> },
+  //   { id: "evaluation", label: "تقييم متدرب", icon: <User size={18} /> },
+  //   { id: "shadowing", label: "مرافقة سائق", icon: <User size={18} /> },
+  // ];
 
   return (
  <div
@@ -116,15 +116,19 @@ export default function HomePage() {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={!employeeCode.trim()}
-          className="w-full flex items-center justify-center gap-2 py-3 px-5 bg-green-700 hover:bg-green-800 disabled:bg-green-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-shadow shadow-md focus:outline-none focus:ring-4 focus:ring-green-400"
-          aria-label="حفظ ومتابعة"
-        >
-          <LogIn size={18} />
-          حفظ ومتابعة
-        </button>
+<button
+  type="submit"
+  disabled={!employeeCode.trim()}
+  className="w-full flex items-center justify-center gap-2 py-3 px-5 bg-green-700 hover:bg-green-800 disabled:bg-green-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-shadow shadow-md focus:outline-none focus:ring-4 focus:ring-green-400"
+  aria-label="حفظ ومتابعة"
+  onClick={() => {
+    window.location.href = "/data_"; // This causes a full page reload
+  }}
+>
+  <LogIn size={18} />
+  حفظ ومتابعة
+</button>
+
       </form>
     )}
   </div>

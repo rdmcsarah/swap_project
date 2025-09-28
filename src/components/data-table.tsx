@@ -106,27 +106,67 @@ import Link from "next/link";
 // const router = useRouter();
 import { FilterFn } from "@tanstack/react-table";
 import { useState } from "react";
+type Employee={
+    id: string
+    name: string
+    email: string
+    phone: string
+    department: string
+    position: string
+    employeeId: string
+    project: string
+    employeeType:string
 
-type Request = {
-  id: string;
-  employeeId: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  requestType: string;
-  firstApprovment: string;
+}
+// type Request = {
+//   id: string;
+//   employeeId: string;
+//   status: string;
+//   createdAt: string;
+//   updatedAt: string;
+//   requestType: string;
+//   firstApprovment: string;
+//   secondApprovment: string;
+//   shiftType1: string;
+//   shiftType2: string;
+//   shiftDate1: string;
+//   shiftDate2: string;
+//   requestComment: string;
+//   replier1_Comment: string;
+//   replier2_Comment: string;
+//   approvalDate1: string;
+//   approvalDate2: string;
+// };
+type Request={
+    id: string
+    employeeId: string
+    status: string
+    createdAt: string
+    updatedAt: string
+    requestType: string
+     firstApprovment: string;
   secondApprovment: string;
-  shiftType1: string;
-  shiftType2: string;
-  shiftDate1: string;
-  shiftDate2: string;
-  requestComment: string;
-  replier1_Comment: string;
-  replier2_Comment: string;
-  approvalDate1: string;
-  approvalDate2: string;
-};
+    shiftType1: string
+    shiftType2: string
+    shiftDate1: string
+    shiftDate2: string
+    requestComment: string
+    replier1_Comment: string
+    replier2_Comment: string
+    approvalDate1: string
+    approvalDate2: string
+  RequestReceivers: {
+    id: string  
+    requestId: string
+    employeeId: string
+    recieverId: string
+    employee: Employee
+    reciever: Employee
+  }[]
 
+
+
+}
 type Data = {
   map(arg0: ({ id }: { id: any }) => any): UniqueIdentifier[];
   requests: Request[];
@@ -205,20 +245,24 @@ export const getRequestColumns = (
       return (
         <div className="flex justify-center">
           {rowEmployeeId === employeeId ? (
-            <Button className="bg-green-700 hover:bg-green-500 rounded-xl px-10 py-2 text-white">
-              <Link href={`/${row.original.id}`}>عرض</Link>
-            </Button>
+            <Link href={`/${row.original.id}`}>
+              <Button className="bg-green-700 hover:bg-green-500 rounded-xl px-10 py-2 text-white">
+                عرض
+              </Button>
+            </Link>
           ) : (
-            <Button className="bg-green-900 hover:bg-green-500 rounded-xl px-8 py-2 text-white">
-              <Link href={`/${row.original.id}`}> اتخذ اجراء</Link>
-            </Button>
+            <Link href={`/${row.original.id}`}>
+              <Button className="bg-green-900 hover:bg-green-500 rounded-xl px-8 py-2 text-white">
+                اتخذ اجراء
+              </Button>
+            </Link>
           )}
         </div>
       );
     },
   },
   {
-    accessorKey: "موافقة_الثانيه",
+    accessorKey: "موافقة الثانيه",
     header: () => (
       <div className="text-center font-semibold"> موافقة ثانية </div>
     ),
@@ -257,7 +301,7 @@ export const getRequestColumns = (
     },
   },
   {
-    accessorKey: "موافقة_اولي",
+    accessorKey: "موافقة اولي",
     header: () => <div className="text-center font-semibold">موافقة أولى</div>,
     cell: ({ row }) => {
       const status = row.original.firstApprovment ?? "PENDING";
@@ -315,7 +359,7 @@ export const getRequestColumns = (
       );
     },
   },
-    {
+  {
     accessorKey: "employeeId",
     header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
     cell: ({ row }) => (
@@ -329,7 +373,7 @@ export const getRequestColumns = (
     enableHiding: false,
   },
   {
-    accessorKey: "مقدم_الطلب",
+    accessorKey: "مقدم الطلب",
     header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
@@ -341,8 +385,50 @@ export const getRequestColumns = (
 
     enableHiding: true,
   },
+  // {
+
+  //   accessorKey: "المستبدل معه",
+  //   header: () => <div className="text-center font-semibold">المستبدل معه </div>,
+  //   cell: (cellContext: any) => {
+  //     const row = cellContext.row as Row<Request>;
+  //     const names = Array.isArray(row.original.RequestReceivers)
+  //       ? row.original.RequestReceivers.map((r) => r.reciever?.name || r.recieverId).join(", ")
+  //       : "N/A";
+  //     return (
+  //       <div className="flex justify-center">
+  //         <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
+  //           {names}
+  //         </Badge>
+
+  //       </div>
+  //     );
+  //   },
+  //   enableHiding: true,
+  // },
   {
-    accessorKey: "الطلب_رقم",
+    accessorKey: "مقدم الطلب اسم ",
+    header: () => <div className="text-center font-semibold">  اسم مقدم الطلب</div>,
+      cell: (cellContext: any) => {
+        const row = cellContext.row as Row<Request>;
+        // Find the RequestReceivers entry where the employeeId equals the request creator
+        const creatorEntry = Array.isArray(row.original.RequestReceivers)
+          ? row.original.RequestReceivers.find((r) => r.employeeId === row.original.employeeId)
+          : undefined;
+        const creatorName = creatorEntry?.employee?.name || row.original.employeeId;
+        return (
+          <div className="flex justify-center">
+            <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
+              {creatorName}
+            </Badge>
+          </div>
+        );
+      },
+
+    enableHiding: true,
+  },
+
+  {
+    accessorKey: "رقم الطلب",
     header: () => <div className="text-center font-semibold">رقم الطلب</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
@@ -405,8 +491,8 @@ export function DataTable({ data }: { data: Request[] }) {
       sorting,
       // columnVisibility,
       columnVisibility: {
-    الطلب_رقم: false, // 👈 hide by default
-    مقدم_الطلب: false, // 👈 hide by default
+     "مقدم الطلب": false, // 👈 hide by default
+   "رقم الطلب": false, // 👈 hide by default
     employeeId: false, // 👈 hide by default
     
     ...columnVisibility,
@@ -489,12 +575,12 @@ export function DataTable({ data }: { data: Request[] }) {
       {/* Filter: Second Approval */}
       <Select
         value={
-          (table.getColumn("موافقة_الثانيه")?.getFilterValue() as string) ??
+          (table.getColumn("موافقة الثانيه")?.getFilterValue() as string) ??
           "ALL"
         }
         onValueChange={(val) =>
           table
-            .getColumn("موافقة_الثانيه")
+            .getColumn("موافقة الثانيه")
             ?.setFilterValue(val === "ALL" ? undefined : val)
         }
       >
@@ -512,12 +598,12 @@ export function DataTable({ data }: { data: Request[] }) {
       {/* Filter: First Approval */}
       <Select
         value={
-          (table.getColumn("موافقة_اولي")?.getFilterValue() as string) ??
+          (table.getColumn("موافقة اولي")?.getFilterValue() as string) ??
           "ALL"
         }
         onValueChange={(val) =>
           table
-            .getColumn("موافقة_اولي")
+            .getColumn("موافقة اولي")
             ?.setFilterValue(val === "ALL" ? undefined : val)
         }
       >

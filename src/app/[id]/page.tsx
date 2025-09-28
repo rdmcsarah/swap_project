@@ -49,7 +49,7 @@ const dataMap: Record<string, string> = {
   REJECTED: "مرفوض",
   evening: "مسائية",
   morning: "صباحية",
-  afternoon: "بعد الظهر",
+  afternoon: "ليليه",
   "shift-exchange": "تبديل المناوبة",
   COMPLETED: "مكتمل"
 };

@@ -331,6 +331,7 @@ console.log("employeeId in header:", notifications.length);
 
 
   return (
+    
     <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between border-b bg-white dark:bg-gray-900 px-4 lg:px-6 shadow-sm">
       {/* Left section with notification bell */}
       <div className="flex items-center">

@@ -13,39 +13,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-// model Employee {
-//   id        String   @id @default(cuid())
-//   name       String
-//   email      String ?     
-//   phone      String?
-//   image      String?
-//   department String?
-//   createdAt  DateTime    @default(now())
-//   employeeId String      @unique
-//   position   String
-//   project    String?
-// }
 
-// model Request{
-
-//   id        String   @id @default(cuid())
-//   employeeId String
-//   status    String   @default("pending")
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//   requestType String
-//   firstApprovment String?
-//   secondApprovment String?
-//   shiftType String?
-//   shiftDate1 DateTime?
-//   shiftDate2 DateTime?
-//   requesterComment String?
-//   replier1_Comment String?
-//   replier2_Comment String?
-//   approvalDate1 DateTime?
-//   approvalDate2 DateTime?
-
-// }
 
 model Employee {
   id        String   @id @default(cuid())
@@ -63,10 +31,9 @@ model Employee {
   // 1-to-many: Creator of requests
   requestsCreated Request[] @relation("RequestCreator")
 
-  // many-to-many: Received requests (implicit relation)
-  receivedRequests Request[] @relation("RequestReceivers")
-
-  RequestReceivers RequestReceivers[]
+  // explicit join model relations for requests received / sent
+  asRequestSender RequestReceivers[] @relation("RequestReceivers_employee")
+  asRequestReceiver RequestReceivers[] @relation("RequestReceivers_reciever")
 }
 
 model Request {
@@ -92,10 +59,8 @@ model Request {
   // 1-to-many: Back relation to creator
   creator Employee @relation("RequestCreator", fields: [employeeId], references: [employeeId])
 
-  // many-to-many: Receivers (implicit)
-  receivers Employee[] @relation("RequestReceivers")
-
-  RequestReceivers RequestReceivers[]
+  // explicit join model for receivers
+  RequestReceivers RequestReceivers[] @relation("RequestReceivers_request")
 }
 
 model RequestReceivers {
@@ -103,10 +68,11 @@ model RequestReceivers {
   employeeId String
   recieverId String
 
-  request Request @relation(fields: [requestId], references: [id])
-  employee Employee @relation(fields: [employeeId], references: [employeeId])
+  request Request @relation("RequestReceivers_request", fields: [requestId], references: [id])
+  employee Employee @relation("RequestReceivers_employee", fields: [employeeId], references: [employeeId])
+  reciever Employee @relation("RequestReceivers_reciever", fields: [recieverId], references: [employeeId])
 
-  @@id([requestId, employeeId])
+  @@id([requestId, employeeId, recieverId])
 }
 
 enum EMPTYPE{

@@ -56,8 +56,16 @@ const relatedRequests = await prisma.request.findMany({
       },
     },
   },
+
   include: {
-    RequestReceivers: true, // optional: include receivers if needed
+    // include the join records and expand both related Employee records
+    RequestReceivers: {
+      include: {
+        employee: true,
+        reciever: true,
+      },
+    },
+    // also include the request creator for convenience
   },
 });
 
