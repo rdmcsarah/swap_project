@@ -102,6 +102,8 @@ const [dataa, setData] =  React.useState<Data>({
     fetchEmployee();
   }, [employeeId]);
 
+ 
+
   // Fetch requests when employeeId is available
   useEffect(() => {
     if (!employeeId) return; // ⛔ Skip if employeeId is null
@@ -154,8 +156,8 @@ const [dataa, setData] =  React.useState<Data>({
   }, [employee]);
 
 
-  console.log("requestffffffffffs",requests)
-
+  // console.log("requestffffffffffs",requests)
+  // console.log("ppppppppppoooooooooooopppppp")
 
 
  useEffect(() => {
@@ -206,11 +208,14 @@ console.log("dataa in pagexx",dataa.requests);
                 {/* <ChartAreaInteractive /> */}
               </div>
               {/* <DataTable data={dataa.requests} /> */}
-<DataTable
-  data={[...dataa.requests].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  )}
-/>
+{employee && (
+  <DataTable
+    data={[...dataa.requests].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )}
+    employee={employee}
+  />
+)}
 
 
             </div>
