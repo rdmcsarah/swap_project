@@ -168,6 +168,8 @@ useEffect(() => {
       if (!id) return;
       
       const res = await fetch(`/api/requests?notfication_empid=${id}`);
+
+
       if (!res.ok) throw new Error(`Notifications fetch failed: ${res.status}`);
       const requests: Request[] = await res.json();
       console.log("Fetched requests for notifications:", requests.length);
@@ -208,6 +210,9 @@ useEffect(() => {
     return () => clearInterval(interval);
   }
 }, [employeeId]);
+
+      console.log("employeeId in header fetch:##################*****************", notifications);
+
 
   useEffect(() => {
    

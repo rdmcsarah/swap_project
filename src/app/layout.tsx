@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
 // import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import React from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset } from "@/components/ui/sidebar";
-
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
-
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
+import ClientSiteHeader from "@/components/client-site-header";
 
 export const metadata: Metadata = {
   title: "Driver Swap",
@@ -31,7 +23,15 @@ export default function RootLayout({
       >
               <SidebarInset>
 
-        <SiteHeader/>
+                {/* SiteHeader needs to read localStorage; mount a client wrapper so this server component doesn't access window */}
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                {/* ClientSiteHeader reads localStorage on the client and conditionally renders SiteHeader */}
+                {/* Importing dynamically to keep layout lean */}
+                <React.Suspense fallback={null}>
+                  <ClientSiteHeader />
+                </React.Suspense>
+
+        
         {children}
               </SidebarInset>
 

@@ -25,6 +25,8 @@ export default function HomePage() {
     localStorage.setItem("employeeId", employeeCode);
     setIsCodeSaved(true);
     console.log("تم حفظ رمز الموظف في localStorage:", employeeCode);
+        window.location.href = "/";
+
   };
 
   // const handleOptionSelect = (option: SetStateAction<string>) => {
@@ -38,6 +40,8 @@ export default function HomePage() {
     localStorage.removeItem("employeeId");
     setEmployeeCode("");
     setIsCodeSaved(false);
+    window.location.href = "/";
+
   };
 
   // const options = [
@@ -122,7 +126,7 @@ export default function HomePage() {
   className="w-full flex items-center justify-center gap-2 py-3 px-5 bg-green-700 hover:bg-green-800 disabled:bg-green-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-shadow shadow-md focus:outline-none focus:ring-4 focus:ring-green-400"
   aria-label="حفظ ومتابعة"
   onClick={() => {
-    window.location.href = "/data_"; // This causes a full page reload
+    window.location.href = "/"; // This causes a full page reload
   }}
 >
   <LogIn size={18} />

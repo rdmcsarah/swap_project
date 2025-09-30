@@ -45,6 +45,9 @@ const employeeId_related = searchParams.get("employeeId_related");
 
 if (employeeId_related) {
 
+
+
+
 const relatedRequests = await prisma.request.findMany({
   where: {
     RequestReceivers: {
@@ -154,6 +157,17 @@ console.log(relatedRequests);
         if (firstApprovment) {
       const reqs = await prisma.request.findMany({
         where: { firstApprovment:firstApprovment },
+
+         include: {
+    // include the join records and expand both related Employee records
+    RequestReceivers: {
+      include: {
+        employee: true,
+        reciever: true,
+      },
+    },
+    // also include the request creator for convenience
+  },
       });
 
     

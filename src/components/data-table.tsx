@@ -247,7 +247,8 @@ export const getRequestColumns = (
 
       return (
         <div className="flex justify-center">
-          {(rowEmployeeId === employeeId || (row.original.firstApprovment !== null  && (employee.employeeType === "DRIVER" || employee.employeeType === "ADMIN"))) ? (
+          {(rowEmployeeId === employeeId || (row.original.firstApprovment !== null  && employee.employeeType === "DRIVER" )|| (employee.employeeType === "ADMIN"  && (row.original.secondApprovment !== null 
+          ) )) ? (
             <Link href={`/${row.original.id}`}>
               <Button className="bg-green-700 hover:bg-green-500 rounded-xl px-10 py-2 text-white">
                 عرض
@@ -354,12 +355,12 @@ export const getRequestColumns = (
       : undefined;
 
     const employee = creatorEntry?.employee;
-    console.log("employee eeeeeeeee  in col",creatorEntry)
+    // console.log("employee eeeeeeeee  in col",row.original.RequestReceivers)
 
     const creatorName = employee?.name || row.original.employeeId;
     // const creatorImage = employee?.image;
     const creatorImage = "";
-console.log("employee in colrow.original.RequestReceivers",row.original.RequestReceivers)
+// console.log("employee in colrow.original.RequestReceivers",row.original)
 
 
 
@@ -368,50 +369,15 @@ console.log("employee in colrow.original.RequestReceivers",row.original.RequestR
         <Avatar className="w-8 h-8">
           <AvatarImage src={creatorImage || undefined} alt={creatorName} />
           <AvatarFallback>
-            {creatorName?.slice(0, 2) ?? "??"}
+            {creatorName?.slice(0, 2) ?? "??"} 
           </AvatarFallback>
         </Avatar>
-        <span className="text-sm font-medium">{creatorName}</span>
+        <span className="text-sm font-medium">{creatorName} </span>
       </div>
     );
   },
   enableHiding: true,
 },
-
-
-//   {
-//   accessorKey: "اسم مقدم الطلب",
-//   header: () => <div className="text-center font-semibold">اسم مقدم الطلب</div>,
-//   cell: (cellContext: any) => {
-//     const row = cellContext.row as Row<Request>;
-
-//     const creatorEntry = Array.isArray(row.original.RequestReceivers)
-//       ? row.original.RequestReceivers.find(
-//           (r) => r.employeeId === row.original.employeeId
-//         )
-//       : undefined;
-
-//     const employee = creatorEntry?.employee;
-//     console.log("employee in col",employee)
-//     const creatorName = employee?.name || row.original.employeeId;
-//     // const creatorImage = employee?.image;
-//     const creatorImage = "";
-
-//     return (
-//       <div className="flex items-center gap-2 justify-center">
-//         <Avatar className="w-8 h-8">
-//           <AvatarImage src={creatorImage || undefined} alt={creatorName} />
-//           <AvatarFallback>
-//             {creatorName?.slice(0, 2) ?? "??"}
-//           </AvatarFallback>
-//         </Avatar>
-//         <span className="text-sm font-medium">{creatorName}</span>
-//       </div>
-//     );
-//   },
-//   enableHiding: true,
-// },
-
   {
     accessorKey: "تاريخ",
     header: () => <div className="text-center font-semibold">تاريخ</div>,
@@ -465,44 +431,40 @@ console.log("employee in colrow.original.RequestReceivers",row.original.RequestR
         accessorKey: "المستبدل معه",
         header: () => <div className="text-center font-semibold">المستبدل معه</div>,
         cell: (cellContext: any) => {
+              const creatorImage = "img";
+
           const row = cellContext.row as Row<Request>;
           const names = Array.isArray(row.original.RequestReceivers)
             ? row.original.RequestReceivers.map((r) => r.reciever?.name || r.recieverId).join(", ")
             : "N/A";
-          return (
-            <div className="flex justify-center">
-              <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
-                {names}fff
-              </Badge>
-            </div>
-          );
+          // return (
+          //   <div className="flex justify-center">
+          //     <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
+          //       {names}
+          //     </Badge>
+          //   </div>
+
+
+
+          
+    return (
+      <div className="flex items-center gap-2 justify-center">
+        <Avatar className="w-8 h-8">
+          <AvatarImage src={creatorImage|| undefined} alt={names} />
+          <AvatarFallback>
+            {names?.slice(0, 2) ?? "??"} 
+          </AvatarFallback>
+        </Avatar>
+        <span className="text-sm font-medium">{names} </span>
+      </div>
+    );
+          
         },
         enableHiding: true,
       },
     ]
   : []),
- 
-  // {
-  //   accessorKey: "مقدم الطلب اسم ",
-  //   header: () => <div className="text-center font-semibold">  اسم مقدم الطلب</div>,
-  //     cell: (cellContext: any) => {
-  //       const row = cellContext.row as Row<Request>;
-  //       // Find the RequestReceivers entry where the employeeId equals the request creator
-  //       const creatorEntry = Array.isArray(row.original.RequestReceivers)
-  //         ? row.original.RequestReceivers.find((r) => r.employeeId === row.original.employeeId)
-  //         : undefined;
-  //       const creatorName = creatorEntry?.employee?.name || row.original.employeeId;
-  //       return (
-  //         <div className="flex justify-center">
-  //           <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
-  //             {creatorName}
-  //           </Badge>
-  //         </div>
-  //       );
-  //     },
 
-  //   enableHiding: true,
-  // },
 
   {
     accessorKey: "رقم الطلب",
@@ -619,6 +581,7 @@ export function DataTable({ data ,employee}: { data: Request[] ,employee: Employ
   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-4 py-4 bg-white border-b border-gray-200 rounded-t-lg shadow-sm">
     {/* Left: Main Action */}
 
+  {employee.employeeType !== "ADMIN" && (
     <div>
       <Button
         onClick={() => router.push("/swap")}
@@ -627,6 +590,8 @@ export function DataTable({ data ,employee}: { data: Request[] ,employee: Employ
         + تقديم طلب
       </Button>
     </div>
+  )}
+  
 
     {/* Middle: Filters & Column Manager */}
     <div className="flex flex-wrap items-center gap-3">
@@ -678,7 +643,10 @@ export function DataTable({ data ,employee}: { data: Request[] ,employee: Employ
       </Select>
 
       {/* Filter: First Approval */}
-      <Select
+
+      {employee.employeeType !== "ADMIN" && (
+        
+        <Select
         value={
           (table.getColumn("موافقة اولي")?.getFilterValue() as string) ??
           "ALL"
@@ -699,6 +667,8 @@ export function DataTable({ data ,employee}: { data: Request[] ,employee: Employ
           <SelectItem value="REJECTED">مرفوض</SelectItem>
         </SelectContent>
       </Select>
+      )}
+    
     </div>
 
     {/* Right: Search Input */}

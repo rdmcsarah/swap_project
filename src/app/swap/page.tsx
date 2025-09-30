@@ -191,49 +191,7 @@ const [showToCalendar, setShowToCalendar] = useState(false);
     setShowDropdown(false);
   };
 
-  // Submit
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   // setIsSubmitting(true);
-  //   // setError("");
-
-
-  //     if (isSubmitting) return; // Extra guard
-  // setIsSubmitting(true);
-  // setError("");
-
-  //   try {
-  //     const employeeId = localStorage.getItem("employeeId") || "RDMC2851";
-
-  //     const requestData = {
-  //       employeeId,
-  //       requestType: "shift-exchange",
-  //       status: "pending",
-  //       shiftType1: formData.shiftType,
-  //       shiftType2: formData.shiftType2,
-  //       shiftDate1: fromDate,
-  //       shiftDate2:toDate,
-  //       requesterComment: formData.requesterComment,
-  //       recieverId: formData.receiverId,
-  //     };
-
-  //     const response = await fetch("/api/requests", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(requestData),
-  //     });
-
-  //     if (!response.ok) throw new Error("فشل إرسال الطلب");
-  //     setRes(await response.json());
-
-  //     if (res?.id) router.push(`/swap/${res.id}`);
-
-  //   } catch (err) {
-  //     setError(err instanceof Error ? err.message : "حدث خطأ غير معروف");
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
+  
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
@@ -244,6 +202,14 @@ const handleSubmit = async (e: React.FormEvent) => {
   try {
     const employeeId = localStorage.getItem("employeeId") || "RDMC2851";
 
+
+    if(formData.shiftType === formData.shiftType2 && fromDate?.toLocaleDateString("sv-SE") === toDate?.toLocaleDateString("sv-SE")){
+
+      setError("لا يمكن اختيار نفس نوع الوردية ونفس التاريخ للطرفين، يرجى تغييره.");
+      setIsSubmitting(false);
+      return;
+     
+    }
     const requestData = {
       employeeId,
       requestType: "shift-exchange",
