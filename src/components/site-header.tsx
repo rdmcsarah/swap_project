@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
-import React, { useState, useRef, useEffect, use } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 type Employee = {
   id: string;
@@ -13,31 +13,64 @@ type Employee = {
   employeeType: string;
 };
 
-type Request = {
-  id: string;
-  employeeId: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  requestType: string;
-  firstApprovment: string;
-  secondApprovment: string;
-  shiftType1: string;
-  shiftType2: string;
-  shiftDate1: string;
-  shiftDate2: string;
-  requestComment: string;
-  replier1_Comment: string;
-  replier2_Comment: string;
-  approvalDate1: string;
-  approvalDate2: string;
-  read?: boolean; // Added read status
-};
+// type Request = {
+//   id: string;
+//   employeeId: string;
+//   status: string;
+//   createdAt: string;
+//   updatedAt: string;
+//   requestType: string;
+//   firstApprovment: string;
+//   secondApprovment: string;
+//   shiftType1: string;
+//   shiftType2: string;
+//   shiftDate1: string;
+//   shiftDate2: string;
+//   requestComment: string;
+//   replier1_Comment: string;
+//   replier2_Comment: string;
+//   approvalDate1: string;
+//   approvalDate2: string;
+//   read?: boolean; // Added read status
+// };
 
+
+
+type Request={
+    id: string
+    employeeId: string
+    status: string
+    createdAt: string
+    updatedAt: string
+    requestType: string
+     firstApprovment: string;
+  secondApprovment: string;
+    shiftType1: string
+    shiftType2: string
+    shiftDate1: string
+    shiftDate2: string
+    requestComment: string
+    replier1_Comment: string
+    replier2_Comment: string
+    approvalDate1: string
+    approvalDate2: string
+      read?: boolean; // Added read status
+
+    RequestReceivers: {
+      requestId: string
+      employeeId: string
+      recieverId: string
+  
+  }
+
+
+
+}
 type NotificationItem = Request & {
   message: string;
   time: string;
   type: 'request' | 'approval' | 'rejection' | 'system';
+  sortTime?: number;
 };
 
 export function SiteHeader() {
@@ -77,6 +110,26 @@ export function SiteHeader() {
     const id = localStorage.getItem("employeeId");
     setEmployeeId(id);
   }, []);
+  // Fetch employee data
+  useEffect(() => {
+    if (!employeeId) return;
+
+    const fetchEmployee = async () => {
+      try {
+        const res = await fetch(`/api/employees?employeeId=${employeeId}`);
+        if (!res.ok) throw new Error(`Employee fetch failed: ${res.status}`);
+        const data = await res.json();
+        console.log("Fetched employee data:", data);
+        setEmployee(data);
+      } catch (err) {
+        console.error("Error fetching employee:", err);
+      }
+    };
+
+    fetchEmployee();
+  }, [employeeId]);
+
+  console.log("Current employee:/**/******************", employee);
 
   // Format date to relative time
   const formatRelativeTime = (dateString: string) => {
@@ -102,6 +155,9 @@ export function SiteHeader() {
 
     const requestType = requestTypeMap[request.requestType] || 'طلب';
 
+
+
+    //we have to change hereee
     switch (request.status) {
       case 'PENDING':
         return `طلب ${requestType} جديد   `;
@@ -116,126 +172,104 @@ export function SiteHeader() {
     }
   };
 
-  // Fetch notifications
-  // useEffect(() => {
-  //   const fetchNotifications = async () => {
-  //     try {
-  //       const id = localStorage.getItem("employeeId");
-  //       if (!id) return;
-        
-  //       const res = await fetch(`/api/requests?notfication_empid=${id}`);
-  //       if (!res.ok) throw new Error(`Notifications fetch failed: ${res.status}`);
-  //       const requests: Request[] = await res.json();
-  //       console.log("Fetched requests for notifications:", requests.length);
-        
-  //       // Transform requests into notification items
-  //       const notificationItems: NotificationItem[] = requests.map(request => ({
-  //         ...request,
-  //         message: generateNotificationMessage(request),
-  //         time: formatRelativeTime(request.updatedAt),
-  //         type: request.status === 'PENDING' ||  request.status === null ? 'request' : 
-  //               request.status === 'APPROVED' || request.status === 'COMPLETED' ? 'approval' : 
-  //               request.status === 'REJECTED' ? 'rejection' : 'system',
-  //         // Apply persisted read state from localStorage so marking stays after reload
-  //         read: getReadIds().has(request.id) || request.read || false
-  //       }));
-
-  //       setNotifications(notificationItems);
-        
-  //       // Calculate unread count
-  //       const unread = notificationItems.filter(n => !n.read).length;
-  //       setUnreadCount(unread);
-        
-  //     } catch (err) {
-  //       console.error("Error fetching notifications:", err);
-  //     }
-  //   };
-
-  //   if (employeeId) {
-  //     fetchNotifications();
-      
-  //     // Set up interval to refresh notifications every 30 seconds
-  //     const interval = setInterval(fetchNotifications, 30000);
-  //     return () => clearInterval(interval);
-  //   }
-  // }, [employeeId]);
-
-  // Fetch notifications
-useEffect(() => {
-  const fetchNotifications = async () => {
-    try {
-      const id = localStorage.getItem("employeeId");
-      if (!id) return;
-      
-      const res = await fetch(`/api/requests?notfication_empid=${id}`);
-
-
-      if (!res.ok) throw new Error(`Notifications fetch failed: ${res.status}`);
-      const requests: Request[] = await res.json();
-      console.log("Fetched requests for notifications:", requests.length);
-      
-      // Sort requests by updatedAt in descending order (newest first)
-      const sortedRequests = requests.sort((a, b) => 
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      );
-      
-      // Transform requests into notification items
-      const notificationItems: NotificationItem[] = sortedRequests.map(request => ({
-        ...request,
-        message: generateNotificationMessage(request),
-        time: formatRelativeTime(request.updatedAt),
-        type: request.status === 'PENDING' ||  request.status === null ? 'request' : 
-              request.status === 'APPROVED' || request.status === 'COMPLETED' ? 'approval' : 
-              request.status === 'REJECTED' ? 'rejection' : 'system',
-        // Apply persisted read state from localStorage so marking stays after reload
-        read: getReadIds().has(request.id) || request.read || false
-      }));
-
-      setNotifications(notificationItems);
-      
-      // Calculate unread count
-      const unread = notificationItems.filter(n => !n.read).length;
-      setUnreadCount(unread);
-      
-    } catch (err) {
-      console.error("Error fetching notifications:", err);
-    }
-  };
-
-  if (employeeId) {
-    fetchNotifications();
-    
-    // Set up interval to refresh notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }
-}, [employeeId]);
-
-      console.log("employeeId in header fetch:##################*****************", notifications);
-
-
+  // Fetch  HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   useEffect(() => {
-   
-
     const fetchNotifications = async () => {
       try {
         const id = localStorage.getItem("employeeId");
         if (!id) return;
-        
+
         const res = await fetch(`/api/requests?notfication_empid=${id}`);
         if (!res.ok) throw new Error(`Notifications fetch failed: ${res.status}`);
         const requests: Request[] = await res.json();
-        console.log("Fetched requests for notifications:ddddddddddd", requests.length);
 
+        // Transform requests into notification items
+        const readIds = getReadIds();
+
+        const items: NotificationItem[] = [];
+
+        for (const request of requests) {
+          const baseId = request.id;
+
+          // Helper to resolve a time number and formatted string
+          const resolveTime = (iso?: string) => {
+            const d = iso ? new Date(iso) : new Date(request.updatedAt || request.createdAt);
+            const t = isNaN(d.getTime()) ? Date.now() : d.getTime();
+            return { sortTime: t, time: formatRelativeTime(d.toISOString()) };
+          };
+
+          // 1) If request is newly created / pending
+          if (request.status === 'PENDING' || request.status === null) {
+            const { sortTime, time } = resolveTime(request.updatedAt || request.createdAt);
+            items.push({
+              ...request,
+              id: `${baseId}_req`,
+              message: generateNotificationMessage(request),
+              time,
+              type: 'request',
+              sortTime,
+              read: readIds.has(`${baseId}_req`),
+            });
+          }
+
+          // 2) First approvment events — Only notify the original requester (creator)
+          // Previously this could notify receivers as well; change to show only to the requester
+          if ((request.firstApprovment === 'APPROVED' || request.firstApprovment === 'REJECTED') && request.employeeId === employeeId) {
+            const { sortTime, time } = resolveTime(request.approvalDate1 || request.updatedAt);
+            items.push({
+              ...request,
+              id: `${baseId}_first`,
+              message: request.firstApprovment === 'APPROVED' ? `الموافق الأول: تم الموافقة على الطلب` : `الموافق الأول: تم رفض الطلب`,
+              time,
+              type: request.firstApprovment === 'APPROVED' ? 'approval' : 'rejection',
+              sortTime,
+              read: readIds.has(`${baseId}_first`),
+            });
+          }
+
+          // 3) Second approvment events
+          if (employee?.employeeType!=="ADMIN" &&  ( (request.secondApprovment === 'APPROVED' || (request.secondApprovment === 'REJECTED' && request.firstApprovment === 'APPROVED' ))
+        
+        
+        )) {
+
+            console.log("+++++++++++++++++++::p ", employee?.employeeType);
+
+            const { sortTime, time } = resolveTime(request.approvalDate2 || request.updatedAt);
+            items.push({
+              ...request,
+              id: `${baseId}_second`,
+              message: request.secondApprovment === 'APPROVED' ? `الموافق الثاني: تم الموافقة على الطلب` : `الموافق الثاني: تم رفض الطلب`,
+              time,
+              type: request.secondApprovment === 'APPROVED' ? 'approval' : 'rejection',
+              sortTime,
+              read: readIds.has(`${baseId}_second`),
+            });
+          }
+          
+
+        }
+
+        // Sort newest first by sortTime and deduplicate by id if needed
+        items.sort((a, b) => (b.sortTime || 0) - (a.sortTime || 0));
+
+        setNotifications(items);
+
+        setUnreadCount(items.filter((n) => !n.read).length);
       } catch (err) {
+        // keep silent in UI; dev console only
         console.error("Error fetching notifications:", err);
       }
+    };
+
+    if (employeeId) {
+      fetchNotifications();
+
+      // refresh in background every 30s
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
     }
-    fetchNotifications();
-
-
-  }, []);
-
+  }, [employeeId, employee]);
 
   // Handle notification click: mark as read in UI immediately, then navigate
   const handleNotificationClick = (notification: NotificationItem) => {
@@ -253,16 +287,35 @@ useEffect(() => {
     );
 
     // Recalculate unread count from current state
-    setUnreadCount((prev) => Math.max(0, prev - (alreadyRead ? 0 : 1)));
+  setUnreadCount((prev) => Math.max(0, prev - (alreadyRead ? 0 : 1)));
 
-    // Navigate based on notification type
+    // Determine base request id for navigation (we append suffixes like _first/_second/_status/_req)
+    let baseId = notification.id;
+    const suffixes = ['_first', '_second', '_status', '_req'];
+    for (const s of suffixes) {
+      if (baseId.endsWith(s)) {
+        baseId = baseId.slice(0, -s.length);
+        break;
+      }
+    }
+
+    // Navigate based on requestType but always use base request id
     if (notification.requestType === 'shift-exchange') {
-      router.push(`/${notification.id}`);
+      router.push(`/${baseId}`);
     } else {
-      router.push(`/requests/${notification.id}`);
+      router.push(`/requests/${baseId}`);
     }
 
     setShowNotifications(false);
+  };
+
+  // Mark all as read (persist and update UI)
+  const markAllAsRead = () => {
+    const readSet = getReadIds();
+    notifications.forEach((n) => readSet.add(n.id));
+    saveReadIds(readSet);
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
   };
 
   // Close dropdown when clicking outside
@@ -275,25 +328,18 @@ useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-console.log("employeeId in header:", notifications.length);
-  // Fetch employee data
+  // Keep unreadCount in sync if localStorage readIds changed externally
   useEffect(() => {
-    if (!employeeId) return;
-
-    const fetchEmployee = async () => {
-      try {
-        const res = await fetch(`/api/employees?employeeId=${employeeId}`);
-        if (!res.ok) throw new Error(`Employee fetch failed: ${res.status}`);
-        const data = await res.json();
-        console.log("Fetched employee data:", data);
-        setEmployee(data);
-      } catch (err) {
-        console.error("Error fetching employee:", err);
-      }
+    const syncUnread = () => {
+      const readIds = getReadIds();
+      setUnreadCount(notifications.filter((n) => !readIds.has(n.id)).length);
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: readIds.has(n.id) })));
     };
 
-    fetchEmployee();
-  }, [employeeId]);
+    // Poll localStorage changes occasionally (no storage event on same window)
+    const interval = setInterval(syncUnread, 2000);
+    return () => clearInterval(interval);
+  }, [notifications]);
 
   // Get icon based on notification type
   const getNotificationIcon = (type: string) => {
@@ -364,28 +410,31 @@ console.log("employeeId in header:", notifications.length);
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-
-            {/* Notification badge */}
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center ring-2 ring-white dark:ring-gray-900 font-medium">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
           </Button>
+
+          {/* Notification badge positioned relative to wrapper so it isn't clipped by the Button */}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center ring-2 ring-white dark:ring-gray-900 font-medium pointer-events-none">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
 
           {/* Dropdown menu */}
           {showNotifications && (
             <div className="absolute left-0 mt-2 w-96 rounded-lg shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
               <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-between items-center">
                 <h3 className="font-semibold text-gray-800 dark:text-white">الإشعارات</h3>
-                {/* {unreadCount > 0 && (
-                  <button 
+                {unreadCount > 0 ? (
+                  <button
                     onClick={markAllAsRead}
                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                    aria-label="Mark all notifications as read"
                   >
                     تعيين الكل كمقروء
                   </button>
-                )} */}
+                ) : (
+                  <span className="text-sm text-gray-500 dark:text-gray-400">لا إشعارات جديدة</span>
+                )}
               </div>
               
               <div className="max-h-96 overflow-y-auto">

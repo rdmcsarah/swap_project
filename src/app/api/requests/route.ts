@@ -174,14 +174,98 @@ console.log(relatedRequests);
 
       return NextResponse.json(reqs);
     }
+ 
+
+ const notfication_empid = searchParams.get("notfication_empid");
+
+// if (notfication_empid) {
+//   console.log("Notification Employee ID:", notfication_empid);
+//   const emp = await prisma.employee.findUnique({
+//     where: { employeeId: notfication_empid },
+//   });
+
+//   console.log("Employee Details:", emp);
+
+//   const relatedRequests = await prisma.request.findMany({
+//     where: {
+//       OR: [
+//         {
+//           OR: [
+
+//             {
+//             RequestReceivers: {
+//             some: {
+//               recieverId: notfication_empid,
+//             },
+//           },
+//             },{
 
 
-const notfication_empid = searchParams.get("notfication_empid");
+//             secondApprovment: {
+//             in: ["APPROVED", "REJECTED"],
+//           },
+//             }
+            
+//           ],
+         
+//         },
+//         {
+//           employeeId: notfication_empid,
+//           OR: [
+//             {
+//               firstApprovment: { in: ["APPROVED", "REJECTED"] },
+//             },
+//             {
+//               secondApprovment: { in: ["APPROVED", "REJECTED"] },
+//             },
+//           ],
+//         },
+//       ],
+//     },
+//     include: {
+//       RequestReceivers: true, // Optional, helpful for debugging
+//     },
+//   });
+
+//   return NextResponse.json(relatedRequests);
+// }
 
 if (notfication_empid) {
   console.log("Notification Employee ID:", notfication_empid);
+  const emp = await prisma.employee.findUnique({
+    where: { employeeId: notfication_empid },
 
+  });
+
+  console.log("Employee Details:", emp);
+
+  if(emp?.employeeType==="ADMIN"){
   const relatedRequests = await prisma.request.findMany({
+    where: {
+      firstApprovment: { in: ["APPROVED"] },
+    },
+    // include: {
+    //   RequestReceivers: true, // Optional, helpful for debugging
+    // },
+   include: {
+    // include the join records and expand both related Employee records
+    RequestReceivers: {
+      include: {
+        employee: true,
+        reciever: true,
+      },
+    },
+    // also include the request creator for convenience
+  },
+  });
+
+    return NextResponse.json(relatedRequests);
+
+  }else if(emp?.employeeType==="DRIVER"){
+
+    console.log("Driver Employee ID:", notfication_empid);
+
+   const relatedRequests = await prisma.request.findMany({
     where: {
       OR: [
         {
@@ -227,7 +311,12 @@ if (notfication_empid) {
   });
 
   return NextResponse.json(relatedRequests);
+  }
+
+
 }
+
+
 
 
 

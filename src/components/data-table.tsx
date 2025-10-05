@@ -342,89 +342,7 @@ export const getRequestColumns = (
     },
   },
 
-  {
-  accessorKey: "اسم مقدم الطلب",
-  header: () => <div className="text-center font-semibold">اسم مقدم الطلب</div>,
-  cell: (cellContext: any) => {
-    const row = cellContext.row as Row<Request>;
 
-    const creatorEntry = Array.isArray(row.original.RequestReceivers)
-      ? row.original.RequestReceivers.find(
-          (r) => r.employeeId === row.original.employeeId
-        )
-      : undefined;
-
-    const employee = creatorEntry?.employee;
-    // console.log("employee eeeeeeeee  in col",row.original.RequestReceivers)
-
-    const creatorName = employee?.name || row.original.employeeId;
-    // const creatorImage = employee?.image;
-    const creatorImage = "";
-// console.log("employee in colrow.original.RequestReceivers",row.original)
-
-
-
-    return (
-      <div className="flex items-center gap-2 justify-center">
-        <Avatar className="w-8 h-8">
-          <AvatarImage src={creatorImage || undefined} alt={creatorName} />
-          <AvatarFallback>
-            {creatorName?.slice(0, 2) ?? "??"} 
-          </AvatarFallback>
-        </Avatar>
-        <span className="text-sm font-medium">{creatorName} </span>
-      </div>
-    );
-  },
-  enableHiding: true,
-},
-  {
-    accessorKey: "تاريخ",
-    header: () => <div className="text-center font-semibold">تاريخ</div>,
-    cell: ({ row }) => {
-      const date = new Date(row.original.createdAt);
-      // 🟢 Format the date in Arabic (long format, e.g. 11 سبتمبر 2025)
-      const formattedDate = new Intl.DateTimeFormat("ar-EG", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(date);
-
-      return (
-        <div className="flex justify-center">
-          <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
-            {formattedDate}
-          </Badge>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "employeeId",
-    header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
-    cell: ({ row }) => (
-      <div className="flex justify-center">
-        <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
-          {row.original.employeeId}
-        </Badge>
-      </div>
-    ),
-
-    enableHiding: false,
-  },
-  {
-    accessorKey: "مقدم الطلب",
-    header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
-    cell: ({ row }) => (
-      <div className="flex justify-center">
-        <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
-          {row.original.employeeId}
-        </Badge>
-      </div>
-    ),
-
-    enableHiding: true,
-  },
 ...(employee.employeeType === "ADMIN"
   ? [
       {
@@ -464,6 +382,98 @@ export const getRequestColumns = (
       },
     ]
   : []),
+
+
+  {
+    accessorKey: "تاريخ",
+    header: () => <div className="text-center font-semibold">تاريخ</div>,
+    cell: ({ row }) => {
+      const date = new Date(row.original.createdAt);
+      // 🟢 Format the date in Arabic (long format, e.g. 11 سبتمبر 2025)
+      const formattedDate = new Intl.DateTimeFormat("ar-EG", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(date);
+
+      return (
+        <div className="flex justify-center">
+          <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
+            {formattedDate}
+          </Badge>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "employeeId",
+    header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
+          {row.original.employeeId}
+        </Badge>
+      </div>
+    ),
+
+    enableHiding: false,
+  },
+
+
+  
+  {
+    accessorKey: "مقدم الطلب",
+    header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
+          {row.original.employeeId}
+        </Badge>
+      </div>
+    ),
+
+    enableHiding: true,
+  },
+
+
+
+
+  {
+  accessorKey: "اسم مقدم الطلب",
+  header: () => <div className="text-center font-semibold">اسم مقدم الطلب</div>,
+  cell: (cellContext: any) => {
+    const row = cellContext.row as Row<Request>;
+
+    const creatorEntry = Array.isArray(row.original.RequestReceivers)
+      ? row.original.RequestReceivers.find(
+          (r) => r.employeeId === row.original.employeeId
+        )
+      : undefined;
+
+    const employee = creatorEntry?.employee;
+    // console.log("employee eeeeeeeee  in col",row.original.RequestReceivers)
+
+    const creatorName = employee?.name || row.original.employeeId;
+    // const creatorImage = employee?.image;
+    const creatorImage = "";
+// console.log("employee in colrow.original.RequestReceivers",row.original)
+
+
+
+    return (
+      <div className="flex items-center gap-2 justify-center">
+        <Avatar className="w-8 h-8">
+          <AvatarImage src={creatorImage || undefined} alt={creatorName} />
+          <AvatarFallback>
+            {creatorName?.slice(0, 2) ?? "??"} 
+          </AvatarFallback>
+        </Avatar>
+        <span className="text-sm font-medium">{creatorName} </span>
+      </div>
+    );
+  },
+  enableHiding: true,
+},
 
 
   {
@@ -764,8 +774,8 @@ export function DataTable({ data ,employee}: { data: Request[] ,employee: Employ
     {/* Pagination */}
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-white rounded-lg border shadow-sm">
       <div className="text-gray-500 hidden sm:flex text-sm">
-        {table.getFilteredSelectedRowModel().rows.length} من{" "}
-        {table.getFilteredRowModel().rows.length} صف/صفوف محددة
+        {/* {table.getFilteredSelectedRowModel().rows.length} من{" "}
+        {table.getFilteredRowModel().rows.length} صف/صفوف محددة */}
       </div>
 
       <div className="flex items-center gap-6">
