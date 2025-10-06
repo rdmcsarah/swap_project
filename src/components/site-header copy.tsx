@@ -203,7 +203,7 @@ export function SiteHeader() {
 
           // 1) If request is newly created / pending — notify receivers (not the requester)
           // The requester should not receive a "new request" notification; they get notified on first approval only.
-          if ((request.status === 'PENDING' || request.status === null) && request.employeeId !== employeeId && employee?.employeeType!=="ADMIN" ) {
+          if ((request.status === 'PENDING' || request.status === null) && request.employeeId !== employeeId) {
             const { sortTime, time } = resolveTime(request.updatedAt || request.createdAt);
             items.push({
               ...request,
@@ -232,10 +232,9 @@ export function SiteHeader() {
           }
 
           // 3) Second approvment events
-          if (employee?.employeeType!=="ADMIN" &&  ( (request.secondApprovment === 'APPROVED' || (request.secondApprovment === 'REJECTED' && request.firstApprovment === 'APPROVED' )  )
+          if (employee?.employeeType!=="ADMIN" &&  ( (request.secondApprovment === 'APPROVED' || (request.secondApprovment === 'REJECTED' && request.firstApprovment === 'APPROVED' ))
         
-        && (employee?.employeeId===employeeId)
-
+        
         )) {
 
             console.log("+++++++++++++++++++::p ", employee?.employeeType);
@@ -251,20 +250,7 @@ export function SiteHeader() {
               read: readIds.has(`${baseId}_second`),
             });
           }
-
-          ///MEEEE
-            if ((employee?.employeeType==="ADMIN" && request.firstApprovment === 'APPROVED' )) {
-            const { sortTime, time } = resolveTime(request.updatedAt || request.createdAt);
-            items.push({
-              ...request,
-              id: `${baseId}_req`,
-              message: generateNotificationMessage(request),
-              time,
-              type: 'request',
-              sortTime,
-              read: readIds.has(`${baseId}_req`),
-            });
-          }
+          
 
         }
 
@@ -397,9 +383,6 @@ export function SiteHeader() {
     }
   };
 
-  // Visible unread count derived from current notifications (UI-only; does not change notification logic)
-  const visibleUnread = notifications.filter((n) => !n.read).length;
-
 
 
   return (
@@ -434,9 +417,9 @@ export function SiteHeader() {
           </Button>
 
           {/* Notification badge positioned relative to wrapper so it isn't clipped by the Button */}
-          {visibleUnread > 0 && (
+          {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center ring-2 ring-white dark:ring-gray-900 font-medium pointer-events-none">
-              {visibleUnread > 99 ? '99+' : visibleUnread}
+              {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
 

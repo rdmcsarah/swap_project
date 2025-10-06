@@ -61,7 +61,9 @@ model Request {
 
   // explicit join model for receivers
   RequestReceivers RequestReceivers[] @relation("RequestReceivers_request")
+  // notifications Notification[] @relation("RequestNotifications")
 }
+
 
 model RequestReceivers {
   requestId String
