@@ -45,6 +45,7 @@ type UserRole = "REQUESTER" | "RECEIVER" | "ADMIN" | "UNAUTHORIZED"
 
 const dataMap: Record<string, string> = {
   PENDING: "قيد الانتظار",
+  null: "قيد الانتظار",
   APPROVED: "تمت الموافقة",
   REJECTED: "مرفوض",
   evening: "مسائية",
@@ -221,13 +222,15 @@ export default function RequestDetails() {
   }
 
   const renderApprovalBadge = (approval: string, label: string) => {
-    if (!approval) return null;
+    // if (!approval) return null;
 
     const getBadgeDetails = () => {
       switch (approval) {
         case "APPROVED":
           return { bg: "bg-green-100", text: "text-green-800", icon: <FaCheckCircle className="ml-1" /> };
         case "PENDING":
+          return { bg: "bg-yellow-100", text: "text-yellow-800", icon: <FaClock className="ml-1" /> };
+        case null:
           return { bg: "bg-yellow-100", text: "text-yellow-800", icon: <FaClock className="ml-1" /> };
         case "REJECTED":
           return { bg: "bg-red-100", text: "text-red-800", icon: <FaTimesCircle className="ml-1" /> };
