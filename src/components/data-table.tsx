@@ -402,21 +402,18 @@ export const getRequestColumns = (
           //     </Badge>
           //   </div>
 
-    const fullName = employee?.name || row.original.employeeId;
 
-// Split the name by spaces, then take the first 2 parts, and join them back
-const firstTwoNames = fullName.split(' ').slice(0, 3).join(' ');
 
           
     return (
       <div className="flex items-center gap-2 justify-center">
         <Avatar className="w-8 h-8">
-          <AvatarImage src={creatorImage|| undefined} alt={firstTwoNames} />
+          <AvatarImage src={creatorImage|| undefined} alt={names} />
           <AvatarFallback>
-            {firstTwoNames?.slice(0, 2) ?? "??"} 
+            {names?.slice(0, 2) ?? "??"} 
           </AvatarFallback>
         </Avatar>
-        <span className="text-sm font-medium">{firstTwoNames} </span>
+        <span className="text-sm font-medium">{names.split(' ').slice(0,3).join(' ')} </span>
       </div>
     );
           
@@ -495,12 +492,11 @@ const firstTwoNames = fullName.split(' ').slice(0, 3).join(' ');
 
     const employee = creatorEntry?.employee;
     // console.log("employee eeeeeeeee  in col",row.original.RequestReceivers)
-
-    // const creatorName = employee?.name || row.original.employeeId;
-    const fullName = employee?.name || row.original.employeeId;
+const fullName = employee?.name || row.original.employeeId;
 
 // Split the name by spaces, then take the first 2 parts, and join them back
 const firstTwoNames = fullName.split(' ').slice(0, 3).join(' ');
+    const creatorName = employee?.name || row.original.employeeId;
     // const creatorImage = employee?.image;
     const creatorImage = "";
 // console.log("employee in colrow.original.RequestReceivers",row.original)
@@ -508,7 +504,16 @@ const firstTwoNames = fullName.split(' ').slice(0, 3).join(' ');
 
 
     return (
-      <div className="flex items-center gap-2 justify-center">
+      // <div className="flex items-center gap-2 justify-center">
+      //   <Avatar className="w-8 h-8">
+      //     <AvatarImage src={creatorImage || undefined} alt={creatorName} />
+      //     <AvatarFallback>
+      //       {creatorName?.slice(0, 2) ?? "??"} 
+      //     </AvatarFallback>
+      //   </Avatar>
+      //   <span className="text-sm font-medium">{creatorName} </span>
+      // </div>
+            <div className="flex items-center gap-2 justify-center">
         <Avatar className="w-8 h-8">
           <AvatarImage src={creatorImage || undefined} alt={firstTwoNames} />
           <AvatarFallback>
