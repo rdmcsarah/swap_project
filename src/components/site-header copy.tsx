@@ -151,7 +151,7 @@ export function SiteHeader() {
   // Generate notification message based on request type and status
   const generateNotificationMessage = (request: Request): string => {
     const requestTypeMap: Record<string, string> = {
-      'shift-exchange': 'تبديل المناوبة',
+      'shift-exchange': 'تبديل الوردية',
       'leave': 'طلب إجازة',
       'overtime': 'طلب عمل إضافي'
     };

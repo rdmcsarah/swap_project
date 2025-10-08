@@ -561,7 +561,12 @@ console.log(relatedRequests);
  const employee = await prisma.request.findUnique({
     where: { id }, // Find request by ID
     include: {
-      RequestReceivers: true, // Include related receivers
+        RequestReceivers: {
+      include: {
+        employee: true,
+        reciever: true,
+      },
+    },
     },
   });
 

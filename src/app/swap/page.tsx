@@ -5,6 +5,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Calendar21 from "@/components/calender";
+import { set } from "zod";
 
 interface FormData {
   requestType: string;
@@ -75,7 +76,7 @@ const [showToCalendar, setShowToCalendar] = useState(false);
   const isAfterNoon = now.getHours() >= 12;
   const disabledDays = [{ before: today }, today, ...(isAfterNoon ? [tomorrow] : [])];
   
-
+const [emp, setEmp] = useState< Employee>();
   // Fetch employees
   useEffect(() => {
     const getEmployees = async () => {
@@ -98,7 +99,30 @@ const [showToCalendar, setShowToCalendar] = useState(false);
     getEmployees();
   }, []);
 
-  console.log("Employees--------------:", employees);
+  useEffect(() => {
+    try {
+      const fetchEmployee = async () => {
+      const empId = localStorage.getItem("employeeId") ;
+
+        if (!empId) return;
+        const response = await fetch(`/api/employees?employeeId=${empId}`);
+
+        if (!response.ok) throw new Error("Failed to fetch employee data");
+        const data = await response.json();
+
+        setEmp(data);
+      };
+
+      fetchEmployee();
+    } catch (err) {
+      setError("تعذر تحميل بيانات الموظفين");
+    }
+
+
+
+  }, []);
+
+  console.log("Employees--------------:", emp);
   // Close dropdown or calendars when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -245,7 +269,8 @@ const handleSubmit = async (e: React.FormEvent) => {
     <div dir="rtl" className="min-h-screen bg-gray-100 flex items-center justify-center px-4 sm:px-6 md:px-8 py-12">
   <div className="w-full max-w-3xl bg-white p-6 sm:p-8 md:p-10 rounded-xl shadow-md">
     <header className="mb-10 text-center">
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">نموذج طلب تبادل ورديات</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-2"> نموذج طلب مبادلة
+ </h1>
       <p className="text-gray-600 text-lg">يرجى تعبئة جميع الحقول المطلوبة لتقديم الطلب</p>
       <div className="w-20 h-1 bg-green-500 mx-auto mt-4 rounded-full"></div>
     </header>
@@ -267,13 +292,13 @@ const handleSubmit = async (e: React.FormEvent) => {
               clipRule="evenodd"
             />
           </svg>
-          الطرف الأول
+          الطرف الأول - {emp?.name}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="shiftType" className="block text-sm font-medium text-gray-700 mb-2">
-              نوع الوردية <span className="text-red-500">*</span>
+                نوع الوردية الحالية<span className="text-red-500">*</span>
             </label>
             <select
               id="shiftType"
@@ -286,7 +311,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <option value="">اختر نوع الوردية</option>
               <option value="morning">صباحية </option>
               <option value="evening">مسائية </option>
-              <option value="afternoon">ليليه </option>
+              <option value="afternoon">ليلية </option>
             </select>
           </div>
 
@@ -372,12 +397,13 @@ const handleSubmit = async (e: React.FormEvent) => {
           <svg className="w-5 h-5 ml-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
           </svg>
-          معلومات الموظف والوردية البديلة
+          الطرف الثاني
+ 
         </h2>
 
   <div className="relative" ref={dropdownRef}>
           <label htmlFor="receiverId" className="block text-sm font-medium text-gray-700 mb-2">
-            الموظف المراد التبادل معه <span className="text-red-500">*</span>
+            الموظف المراد المبادلة معه <span className="text-red-500">*</span>
           </label>
           <input
             required
@@ -414,7 +440,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <div>
             <label htmlFor="shiftType2" className="block text-sm font-medium text-gray-700 mb-2">
-              نوع الوردية البديلة <span className="text-red-500">*</span>
+              نوع الوردية المطلوبة <span className="text-red-500">*</span>
             </label>
             <select
               id="shiftType2"
@@ -427,7 +453,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <option value="">اختر نوع الوردية</option>
               <option value="morning">صباحية</option>
               <option value="evening">مسائية</option>
-              <option value="afternoon">ليليه</option>
+              <option value="afternoon">ليلية</option>
             </select>
           </div>
         </div>
@@ -498,7 +524,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                   clipRule="evenodd"
                 />
               </svg>
-              إرسال طلب التبديل
+              إرسال طلب المبادلة
+ 
             </>
           )}
         </button>

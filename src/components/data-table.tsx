@@ -201,7 +201,7 @@ const statusMap: Record<string, string> = {
 };
 
 const requestTypeMap: Record<string, string> = {
-  "shift-exchange": "تبديل المناوبة",
+  "shift-exchange": "تبديل الوردية",
 };
 
 const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
@@ -266,9 +266,9 @@ export const getRequestColumns = (
     },
   },
   {
-    accessorKey: "موافقة الثانيه",
+    accessorKey: "موافقة فريق التخطيط",
     header: () => (
-      <div className="text-center font-semibold"> موافقة ثانية </div>
+      <div className="text-center font-semibold"> موافقة فريق التخطيط</div>
     ),
     cell: ({ row }) => {
       const status = row.original.secondApprovment ?? "PENDING";
@@ -305,8 +305,8 @@ export const getRequestColumns = (
     },
   },
   {
-    accessorKey: "موافقة اولي",
-    header: () => <div className="text-center font-semibold">موافقة أولى</div>,
+    accessorKey: "موافقة الطرف الثاني",
+    header: () => <div className="text-center font-semibold"> موافقة الطرف الثاني</div>,
     cell: ({ row }) => {
       const status = row.original.firstApprovment ?? "PENDING";
       const statusLabel =
@@ -343,11 +343,51 @@ export const getRequestColumns = (
   },
 
 
-...(employee.employeeType === "ADMIN"
-  ? [
+// ...(employee.employeeType === "ADMIN"
+//   ? [
+
+       {
+       
+
+        accessorKey:"كود الطرف الثاني",
+        header: () => <div className="text-center font-semibold">كود الطرف الثاني</div>,
+        cell: (cellContext: any) => {
+              const creatorImage = "img";
+
+          const row = cellContext.row as Row<Request>;
+          const names = Array.isArray(row.original.RequestReceivers)
+            ? row.original.RequestReceivers.map((r) => r.reciever?.employeeId || r.recieverId).join(", ")
+            : "N/A";
+          // return (
+          //   <div className="flex justify-center">
+          //     <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
+          //       {names}
+          //     </Badge>
+          //   </div>
+
+
+
+          
+    return (
+      <div className="flex items-center gap-2 justify-center">
+        <Avatar className="w-8 h-8">
+          <AvatarImage src={creatorImage|| undefined} alt={names} />
+          <AvatarFallback>
+            {names?.slice(0, 2) ?? "??"} 
+          </AvatarFallback>
+        </Avatar>
+        <span className="text-sm font-medium">{names} </span>
+      </div>
+    );
+          
+        },
+        enableHiding: true,
+      },
       {
-        accessorKey: "المستبدل معه",
-        header: () => <div className="text-center font-semibold">المستبدل معه</div>,
+       
+
+        accessorKey:" اسم الطرف الثاني",
+        header: () => <div className="text-center font-semibold"> اسم الطرف الثاني</div>,
         cell: (cellContext: any) => {
               const creatorImage = "img";
 
@@ -380,13 +420,13 @@ export const getRequestColumns = (
         },
         enableHiding: true,
       },
-    ]
-  : []),
 
+    // ]
+  // : []),
 
   {
-    accessorKey: "تاريخ",
-    header: () => <div className="text-center font-semibold">تاريخ</div>,
+    accessorKey: "تاريخ التقديم",
+    header: () => <div className="text-center font-semibold">تاريخ التقديم</div>,
     cell: ({ row }) => {
       const date = new Date(row.original.createdAt);
       // 🟢 Format the date in Arabic (long format, e.g. 11 سبتمبر 2025)
@@ -422,8 +462,8 @@ export const getRequestColumns = (
 
   
   {
-    accessorKey: "مقدم الطلب",
-    header: () => <div className="text-center font-semibold">مقدم الطلب</div>,
+    accessorKey: "كود مقدم الطلب",
+    header: () => <div className="text-center font-semibold"> كود مقدم الطلب</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
         <Badge variant="outline" className="px-3 py-1.5 rounded-lg text-sm">
@@ -544,8 +584,8 @@ export function DataTable({ data ,employee}: { data: Request[] ,employee: Employ
       sorting,
       // columnVisibility,
       columnVisibility: {
-     "مقدم الطلب": false, // 👈 hide by default
-   "رقم الطلب": false, // 👈 hide by default
+  //    "مقدم الطلب": false, // 👈 hide by default
+  //  "رقم الطلب": false, // 👈 hide by default
     employeeId: false, // 👈 hide by default
     
     ...columnVisibility,
@@ -632,20 +672,20 @@ export function DataTable({ data ,employee}: { data: Request[] ,employee: Employ
       {/* Filter: Second Approval */}
       <Select
         value={
-          (table.getColumn("موافقة الثانيه")?.getFilterValue() as string) ??
+          (table.getColumn("موافقة فريق التخطيط")?.getFilterValue() as string) ??
           "ALL"
         }
         onValueChange={(val) =>
           table
-            .getColumn("موافقة الثانيه")
+            .getColumn("موافقة فريق التخطيط")
             ?.setFilterValue(val === "ALL" ? undefined : val)
         }
       >
-        <SelectTrigger className="w-36 text-sm rounded-lg">
-          <SelectValue placeholder="موافقة ثانية" />
+        <SelectTrigger className="w-50 text-sm rounded-lg">
+          <SelectValue placeholder="موافقة فريق التخطيط" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="ALL">موافقة ثانية</SelectItem>
+          <SelectItem value="ALL"> موافقة فريق التخطيط</SelectItem>
            <SelectItem value="APPROVED">تمت الموافقه</SelectItem>
           <SelectItem value="PENDING">قيد الانتظار</SelectItem>
           <SelectItem value="REJECTED">مرفوض</SelectItem>
@@ -658,20 +698,20 @@ export function DataTable({ data ,employee}: { data: Request[] ,employee: Employ
         
         <Select
         value={
-          (table.getColumn("موافقة اولي")?.getFilterValue() as string) ??
+          (table.getColumn("موافقة الطرف الثاني")?.getFilterValue() as string) ??
           "ALL"
         }
         onValueChange={(val) =>
           table
-            .getColumn("موافقة اولي")
+            .getColumn("موافقة الطرف الثاني")
             ?.setFilterValue(val === "ALL" ? undefined : val)
         }
       >
-        <SelectTrigger className="w-36 text-sm rounded-lg">
-          <SelectValue placeholder="موافقة أولى" />
+        <SelectTrigger className="w-50 text-sm rounded-lg">
+          <SelectValue placeholder=" موافقة الطرف الثاني" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="ALL">موافقة أولى</SelectItem>
+          <SelectItem value="ALL"> موافقة الطرف الثاني</SelectItem>
           <SelectItem value="APPROVED">تمت الموافقه</SelectItem>
           <SelectItem value="PENDING">قيد الانتظار</SelectItem>
           <SelectItem value="REJECTED">مرفوض</SelectItem>

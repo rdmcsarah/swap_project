@@ -73,9 +73,15 @@ export default function HomePage() {
     {isCodeSaved ? (
       <div className="text-center">
         <div className="p-6 rounded-lg mb-8 shadow-md border border-green-600">
-          <h1 className="text-white text-xl font-semibold">
-            تطبيق لتبديل السائقين بين المركبات بسهولة وكفاءة
-          </h1>
+          {/* <h1 className="text-white text-xl font-semibold p-2">RDMC  تطبيق مبادلة الورديات بين موظفي </h1>
+          <h1 className="text-white text-xl font-semibold">RDMC Shift Swap App</h1> */}
+
+<h1 className="text-white text-l font-semibold p-2">
+  <div className="p-2">RDMC تطبيق مبادلة الورديات بين موظفي</div>
+  <div>RDMC Shift Swap App</div>
+</h1>
+
+
           {/* Additional success messages can go here */}
         </div>
 
@@ -85,7 +91,13 @@ export default function HomePage() {
             className="flex-1 flex items-center justify-center p-3 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-lg transition-shadow shadow-md focus:outline-none focus:ring-4 focus:ring-green-400"
             aria-label="طلب تبديل السائقين"
           >
-            طلب تبديل
+           عرض طلبات المبادلة 
+          </button>
+            <button
+ onClick={() => router.push("/swap")}            className="flex-1 flex items-center justify-center p-3 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-lg transition-shadow shadow-md focus:outline-none focus:ring-4 focus:ring-green-400"
+            aria-label="طلب تبديل السائقين"
+          >
+            تقديم طلب مبادلة
           </button>
           {/* Uncomment and style additional buttons as needed */}
         </div>
@@ -95,7 +107,7 @@ export default function HomePage() {
           className="mt-8 block text-sm text-gray-200 hover:text-gray-400 underline transition"
           aria-label="استخدام رمز موظف مختلف"
         >
-          استخدام رمز موظف مختلف
+          استخدام كود موظف مختلف
         </button>
       </div>
     ) : (
@@ -105,7 +117,7 @@ export default function HomePage() {
             htmlFor="employeeCode"
             className="block text-sm font-medium text-gray-700 mb-2 text-right"
           >
-            رمز الموظف
+            كود الموظف
           </label>
           <input
             id="employeeCode"
@@ -113,7 +125,7 @@ export default function HomePage() {
             value={employeeCode}
             onChange={(e) => setEmployeeCode(e.target.value)}
             className="w-full px-5 py-3 border border-gray-300 rounded-lg focus:ring-4 focus:ring-green-400 focus:border-green-600 transition text-right bg-white placeholder-gray-400"
-            placeholder="أدخل رمز الموظف"
+            placeholder="أدخل كود الموظف"
             required
             aria-required="true"
             aria-describedby="employeeCodeHelp"

@@ -22,13 +22,16 @@ interface Request {
   replier2_Comment: string
   approvalDate1: string
   approvalDate2: string
-  RequestReceivers: [{
-    requestId: string
-    employeeId: string
-    recieverId: string
-  }]
-}
+  RequestReceivers: RequestReceiver[];
 
+}
+interface RequestReceiver {
+  requestId: string;
+  employeeId: string;
+  recieverId: string;
+  employee: Employee;
+  reciever: Employee;
+}
 type Employee = {
   id: string
   name: string
@@ -50,8 +53,8 @@ const dataMap: Record<string, string> = {
   REJECTED: "مرفوض",
   evening: "مسائية",
   morning: "صباحية",
-  afternoon: "ليليه",
-  "shift-exchange": "تبديل المناوبة",
+  afternoon: "ليلية",
+  "shift-exchange": "تبديل الوردية",
   COMPLETED: "مكتمل"
 };
 
@@ -91,6 +94,8 @@ export default function RequestDetails() {
 
     fetchReq()
   }, [id])
+
+  console.log("Request Data with Receivers:", requestData?.RequestReceivers[0].employee?.name);
 
   const recieverId = React.useMemo(() => {
     if (Array.isArray(requestData?.RequestReceivers) && requestData.RequestReceivers.length > 0) {
@@ -330,14 +335,14 @@ export default function RequestDetails() {
                   <FaInfoCircle className="text-green-600 text-xl" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">طلب تبديل المناوبة</h1>
+                  <h1 className="text-2xl font-bold text-gray-900">طلب تبديل الوردية</h1>
                   <p className="mt-1 text-sm text-gray-600">رقم الطلب: #{requestData.id.slice(0, 8)}</p>
                 </div>
               </div>
 
               <div className="flex flex-col md:flex-row md:items-center gap-4 mt-4 md:mt-0">
-                {renderApprovalBadge(requestData.firstApprovment, "الموافقة الأولى")}
-                {renderApprovalBadge(requestData.secondApprovment, "الموافقة الثانية")}
+                {renderApprovalBadge(requestData.firstApprovment, " موافقة الطرف الثاني")}
+                {renderApprovalBadge(requestData.secondApprovment, "موافقة فريق التخطيط")}
                 
                 {/* <div>
                   <span className="text-sm font-medium text-gray-700 mb-1 block">الحالة النهائية</span>
@@ -379,6 +384,46 @@ export default function RequestDetails() {
                       نوع الطلب
                     </h3>
                     <p className="text-gray-600 mt-2 pr-6">{dataMap[requestData.requestType]}</p>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {requestData.shiftDate1 && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="font-medium text-gray-700 flex items-center">
+                          <FaCalendarAlt className="ml-2 text-green-600" />
+
+من                        </h3>
+                        <p className="text-gray-600 mt-2">
+                          {formatDate(requestData.shiftDate1)}
+                        </p>
+                        
+                        {/* {requestData.shiftType1 && (
+                          <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            {dataMap[requestData.shiftType1]}
+                          </span>
+                        )} */}
+                      </div>
+                    )}
+
+                    {requestData.shiftDate2 && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="font-medium text-gray-700 flex items-center">
+                          <FaCalendarAlt className="ml-2 text-green-600" />
+                          الي
+                        </h3>
+                        <p className="text-gray-600 mt-2">
+                          {formatDate(requestData.shiftDate2)}
+                        </p>
+                        {/* {requestData.shiftType2 && (
+                          <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            {dataMap[requestData.shiftType2]}
+                          </span>
+                        )} */}
+                      </div>
+                    )}
+                  </div> 
+
+                   
+                 
                   </div>
 
                   {requestData.requesterComment && (
@@ -395,7 +440,7 @@ export default function RequestDetails() {
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <h3 className="font-medium text-gray-700 flex items-center">
                         <FaComment className="ml-2 text-green-600" />
-                        تعليق الموظف المستبدَل
+                        تعليق الموظف الطرف الثاني
                       </h3>
                       <p className="text-gray-600 mt-2 pr-6">{requestData.replier1_Comment}</p>
                     </div>
@@ -410,13 +455,49 @@ export default function RequestDetails() {
                       <p className="text-gray-600 mt-2 pr-6">{requestData.replier2_Comment}</p>
                     </div>
                   )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {requestData.shiftDate1 && (
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <h3 className="font-medium text-gray-700 flex items-center">
                           <FaCalendarAlt className="ml-2 text-green-600" />
-                          المناوبة الحالية
+                          الوردية الحالية
+                        </h3>
+                        <p className="text-gray-600 mt-2">
+                          {/* {formatDate(requestData.shiftDate1)} */}
+                        </p>
+                        {requestData.shiftType1 && (
+                          <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            {dataMap[requestData.shiftType1]}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {requestData.shiftDate2 && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="font-medium text-gray-700 flex items-center">
+                          <FaCalendarAlt className="ml-2   text-green-600" />
+                          الوردية المطلوبة
+                        </h3>
+                        <p className="text-gray-600 mt-2">
+                          {/* {formatDate(requestData.shiftDate2)} */}
+                        </p>
+                        {requestData.shiftType2 && (
+                          <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            {dataMap[requestData.shiftType2]}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div> 
+
+                  
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {requestData.shiftDate1 && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="font-medium text-gray-700 flex items-center">
+                          <FaCalendarAlt className="ml-2 text-green-600" />
+                          الوردية الحالية
                         </h3>
                         <p className="text-gray-600 mt-2">
                           {formatDate(requestData.shiftDate1)}
@@ -433,7 +514,7 @@ export default function RequestDetails() {
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <h3 className="font-medium text-gray-700 flex items-center">
                           <FaCalendarAlt className="ml-2 text-green-600" />
-                          المناوبة المطلوبة
+                          الوردية المطلوبة
                         </h3>
                         <p className="text-gray-600 mt-2">
                           {formatDate(requestData.shiftDate2)}
@@ -445,7 +526,7 @@ export default function RequestDetails() {
                         )}
                       </div>
                     )}
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Comment field for approvers */}
@@ -486,6 +567,8 @@ export default function RequestDetails() {
                 }
               </div>
 
+              
+
               {/* Right Column */}
               <div className="space-y-6">
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -496,13 +579,13 @@ export default function RequestDetails() {
                   <dl className="space-y-4">
                     <div>
                       <dt className="text-sm font-medium text-gray-500">مقدم الطلب</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{requestData.employeeId}</dd>
+                      <dd className="mt-1 text-sm text-gray-900">{requestData.employeeId}-{requestData?.RequestReceivers[0].employee?.name}</dd>
                     </div>
 
                     {receiver && (
                       <div>
-                        <dt className="text-sm font-medium text-gray-500">الموظف المستبدَل</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{receiver.employeeId}</dd>
+                        <dt className="text-sm font-medium text-gray-500">الطرف الثاني </dt>
+                        <dd className="mt-1 text-sm text-gray-900">{receiver.employeeId}-{requestData?.RequestReceivers[0].reciever?.name}</dd>
                       </div>
                     )}
                     
@@ -513,14 +596,14 @@ export default function RequestDetails() {
 
                     {requestData.approvalDate1 && (
                       <div>
-                        <dt className="text-sm font-medium text-gray-500">تاريخ الموافقة الأولى</dt>
+                        <dt className="text-sm font-medium text-gray-500">تاريخ موافقة الطرف الثاني </dt>
                         <dd className="mt-1 text-sm text-gray-900">{formatDate(requestData.approvalDate1)}</dd>
                       </div>
                     )}
 
                     {requestData.approvalDate2 && (
                       <div>
-                        <dt className="text-sm font-medium text-gray-500">تاريخ الموافقة الثانية</dt>
+                        <dt className="text-sm font-medium text-gray-500">تاريخ موافقة  فريق التخطيط </dt>
                         <dd className="mt-1 text-sm text-gray-900">{formatDate(requestData.approvalDate2)}</dd>
                       </div>
                     )}
