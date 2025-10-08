@@ -402,18 +402,21 @@ export const getRequestColumns = (
           //     </Badge>
           //   </div>
 
+    const fullName = employee?.name || row.original.employeeId;
 
+// Split the name by spaces, then take the first 2 parts, and join them back
+const firstTwoNames = fullName.split(' ').slice(0, 3).join(' ');
 
           
     return (
       <div className="flex items-center gap-2 justify-center">
         <Avatar className="w-8 h-8">
-          <AvatarImage src={creatorImage|| undefined} alt={names} />
+          <AvatarImage src={creatorImage|| undefined} alt={firstTwoNames} />
           <AvatarFallback>
-            {names?.slice(0, 2) ?? "??"} 
+            {firstTwoNames?.slice(0, 2) ?? "??"} 
           </AvatarFallback>
         </Avatar>
-        <span className="text-sm font-medium">{names} </span>
+        <span className="text-sm font-medium">{firstTwoNames} </span>
       </div>
     );
           
@@ -493,7 +496,11 @@ export const getRequestColumns = (
     const employee = creatorEntry?.employee;
     // console.log("employee eeeeeeeee  in col",row.original.RequestReceivers)
 
-    const creatorName = employee?.name || row.original.employeeId;
+    // const creatorName = employee?.name || row.original.employeeId;
+    const fullName = employee?.name || row.original.employeeId;
+
+// Split the name by spaces, then take the first 2 parts, and join them back
+const firstTwoNames = fullName.split(' ').slice(0, 3).join(' ');
     // const creatorImage = employee?.image;
     const creatorImage = "";
 // console.log("employee in colrow.original.RequestReceivers",row.original)
@@ -503,12 +510,12 @@ export const getRequestColumns = (
     return (
       <div className="flex items-center gap-2 justify-center">
         <Avatar className="w-8 h-8">
-          <AvatarImage src={creatorImage || undefined} alt={creatorName} />
+          <AvatarImage src={creatorImage || undefined} alt={firstTwoNames} />
           <AvatarFallback>
-            {creatorName?.slice(0, 2) ?? "??"} 
+            {firstTwoNames?.slice(0, 2) ?? "??"} 
           </AvatarFallback>
         </Avatar>
-        <span className="text-sm font-medium">{creatorName} </span>
+        <span className="text-sm font-medium">{firstTwoNames} </span>
       </div>
     );
   },
