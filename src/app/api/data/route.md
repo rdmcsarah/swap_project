@@ -70,7 +70,6 @@ export async function GET() {
           email: emp.email,
           phone: emp.phone,
           department: emp.department,
-          managerId: emp.managerId,
           name: emp.name,
           position: emp.position,
           employeeType: "DRIVER",
@@ -81,7 +80,6 @@ export async function GET() {
           email: emp.email,
           phone: emp.phone,
           department: emp.department,
-          managerId: emp.managerId,
           name: emp.name,
           position: emp.position,
           employeeType: "DRIVER",
@@ -93,9 +91,6 @@ export async function GET() {
 
   return new Response(JSON.stringify(newEmployees), { status: 200 });
 }
-
-
-
 
 
 
