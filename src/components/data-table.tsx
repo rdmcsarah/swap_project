@@ -810,12 +810,13 @@ export function DataTable({ data ,employee}: { data: Request[] ,employee: Employ
               </SortableContext>
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={getRequestColumns.length}
-                  className="h-24 text-center text-gray-500"
-                >
-                  لا توجد نتائج
-                </TableCell>
+              <TableCell
+  colSpan={getRequestColumns.length}
+  className="h-24 text-center text-gray-500 flex items-center justify-center"
+>
+  {/* لا توجد نتائج */}
+</TableCell>
+
               </TableRow>
             )}
           </TableBody>

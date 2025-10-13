@@ -21,74 +21,6 @@ const config = {
     idleTimeoutMillis: 90000
   }
 };
-// export async function GET() {
-//   const pool = new sql.ConnectionPool(config);
-//   await pool.connect();
-
-//   console.log("Connected to SQL Server successfully");
-
-//   // ✅ get the latest createdAt from Prisma
-//   const latestEmp = await prisma.employee.findFirst({
-//     select: { createdAt: true },
-//     orderBy: { createdAt: "desc" },
-//   });
-
-// console.log("Latest createdAt from Prisma:", latestEmp);
-// //   const fromDate = latestEmp?.createdAt ; // fallback
-//   // ✅ query SQL Server
-//   const result = await pool
-//     .request()
-//     .input("fromDate", sql.DateTime, fromDate)
-//     .input("toDate", sql.DateTime, new Date("2030-12-31"))
-//     .query(`
-//       SELECT 
-//         "Employee code" as employeeId, 
-//         "Email" as email, 
-//         "Corporate Phone Number" as phone, 
-//         "updatedate" as updated,
-//         "Department" as department,
-//         "ID NAME" as name,
-//         "Position" as position
-//       FROM vw_HHP_HR
-//       WHERE updatedate >= @fromDate AND updatedate <= @toDate
-//       ORDER BY updatedate ASC
-//     `);
-
-
-// console.log("Latest createdAt from Prisma:", result);
-
-//   await pool.close();
-
-//   // ✅ upsert one by one
-//   const newEmployees = await Promise.all(
-//     result.recordset.map((emp) =>
-//       prisma.employee.upsert({
-//         where: { employeeId: emp.employeeId },
-//         create: {
-//           employeeId: emp.employeeId,
-//           email: emp.email,
-//           phone: emp.phone,
-//           department: emp.department,
-//           name: emp.name,
-//           position: emp.position,
-//           employeeType: "DRIVER",
-//           createdAt: emp.updated ? new Date(emp.updated) : new Date(),
-//         },
-//         update: {
-//           email: emp.email,
-//           phone: emp.phone,
-//           department: emp.department,
-//           name: emp.name,
-//           position: emp.position,
-//           employeeType: "DRIVER",
-//           createdAt: emp.updated ? new Date(emp.updated) : new Date(),
-//         },
-//       })
-//     )
-//   );
-
-//   return new Response(JSON.stringify(newEmployees), { status: 200 });
-// }
 
 
 export async function GET() {
@@ -112,22 +44,23 @@ const result = await pool
   .input("fromDate", sql.DateTime, fromDate)
   .input("toDate", sql.DateTime, new Date("2030-12-31"))
   .query(`
-    SELECT 
-      "Employee code" AS employeeId, 
-      "Email" AS email, 
-      "Corporate Phone Number" AS phone, 
+    SELECT
+      "Employee code" AS employeeId,
+      "Email" AS email,
+      "Corporate Phone Number" AS phone,
       "updatedate" AS updated,
       "Department" AS department,
-      "ID NAME" AS name,
+      "First Name AR" + ' ' + "Last Name AR" AS name,
       "Position" AS position
     FROM vw_HHP_HR
-    WHERE 
-      updatedate >= @fromDate 
-      AND updatedate <= @toDate
-      AND "Department" = 'Operations L3'
-      AND "Position" = 'Metro Driver'
+    WHERE
+      updatedate >= @fromDate AND
+      updatedate <= @toDate AND
+      "Department" = 'Operations L3' AND
+      "Position" = 'Metro Driver'
     ORDER BY updatedate ASC
   `);
+
 
   console.log("SQL Server query result count:", result.recordset.length);
 
@@ -166,6 +99,46 @@ const result = await pool
 }
 
 
+// export async function GET() {
+//   const pool = new sql.ConnectionPool(config);
+//   await pool.connect();
+
+//   console.log("Connected to SQL Server successfully");
+
+//   // Get the latest createdAt from Prisma (fallback to old date if none found)
+//   const latestEmp = await prisma.employee.findFirst({
+//     select: { createdAt: true },
+//     orderBy: { createdAt: "desc" },
+//   });
+
+//   const fromDate = latestEmp?.createdAt ?? new Date(0); // fallback to Unix epoch if none
+
+//   console.log("Latest createdAt from Prisma:", fromDate);
+
+// const result = await pool
+//   .request()
+//   .input("fromDate", sql.DateTime, fromDate)
+//   .input("toDate", sql.DateTime, new Date("2030-12-31"))
+//   .query(`
+//     SELECT 
+//      *
+//     FROM vw_HHP_HR
+//     WHERE 
+//       updatedate >= @fromDate 
+//       AND updatedate <= @toDate
+//       AND "Department" = 'Operations L3'
+//       AND "Position" = 'Metro Driver'
+//     ORDER BY updatedate ASC
+//   `);
+
+//   console.log("SQL Server query result count:", result.recordset.length);
+
+//   await pool.close();
+
+
+
+//   return new Response(JSON.stringify(result), { status: 200 });
+// }
 
 
 
