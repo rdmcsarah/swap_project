@@ -95,13 +95,11 @@ export default function RequestDetails() {
     fetchReq()
   }, [id])
 
-  console.log("Request Data with Receivers:", requestData?.RequestReceivers[0].employee?.name);
+  console.log("Request Data with Receivers:", requestData?.RequestReceivers?.[0]?.employee?.name);
 
   const recieverId = React.useMemo(() => {
-    if (Array.isArray(requestData?.RequestReceivers) && requestData.RequestReceivers.length > 0) {
-      return requestData.RequestReceivers[0].recieverId;
-    }
-    return null;
+    // Return the first receiver id if available, otherwise null
+    return requestData?.RequestReceivers?.[0]?.recieverId ?? null;
   }, [requestData]);
 
   useEffect(() => {
@@ -579,13 +577,13 @@ export default function RequestDetails() {
                   <dl className="space-y-4">
                     <div>
                       <dt className="text-sm font-medium text-gray-500">مقدم الطلب</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{requestData.employeeId}-{requestData?.RequestReceivers[0].employee?.name}</dd>
+                      <dd className="mt-1 text-sm text-gray-900">{requestData.employeeId}-{requestData.RequestReceivers?.[0]?.employee?.name}</dd>
                     </div>
 
                     {receiver && (
                       <div>
                         <dt className="text-sm font-medium text-gray-500">الطرف الثاني </dt>
-                        <dd className="mt-1 text-sm text-gray-900">{receiver.employeeId}-{requestData?.RequestReceivers[0].reciever?.name}</dd>
+                        <dd className="mt-1 text-sm text-gray-900">{receiver.employeeId}-{requestData.RequestReceivers?.[0]?.reciever?.name}</dd>
                       </div>
                     )}
                     

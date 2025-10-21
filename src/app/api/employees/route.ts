@@ -156,10 +156,11 @@ export async function POST(request: Request) {
       },
     });
 
+    console.log("New employee created:", newEmployee);
     return NextResponse.json(newEmployee, { status: 201 });
-  } catch (error) {
+  } catch (error:any) {
     return NextResponse.json(
-      { error: "Failed to create employee" },
+      { error: error.message || "Failed to create employee" },
       { status: 500 }
     );
   }
@@ -169,7 +170,7 @@ export async function PUT(request: Request) {
 
   try {
     const data = await request.json();
-    const { email, name, phone, department, employeeId, position, project } = data;
+    const { email, name, phone, department, employeeId, position, project ,employeeType} = data;
 
     // Basic validation
     if (!employeeId ) {
@@ -179,6 +180,16 @@ export async function PUT(request: Request) {
       );
     }
 
+    const employee = await prisma.employee.findUnique({
+      where: { employeeId },
+    });
+
+    if( !employee){
+      return NextResponse.json(
+        { error: "Employee not found" },
+        { status: 404 }
+      );
+    }
     const updatedEmployee = await prisma.employee.update({
       where: { employeeId },
       data: {
@@ -188,8 +199,11 @@ export async function PUT(request: Request) {
         department,
         position,
         project,
+        employeeType
       },
     });
+
+
 
     return NextResponse.json(updatedEmployee);
   } catch (error) {
